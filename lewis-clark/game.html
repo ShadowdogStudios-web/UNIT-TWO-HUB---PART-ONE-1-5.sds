@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#07131f">
+<title>Corps of Discovery: Westward — Expedition Edition</title>
+<style>
+:root{
+  --ink:#f5f7f9;--muted:#b8c7d3;--gold:#e1bf67;--gold2:#9e792b;
+  --blue:#72b9d7;--green:#74b586;--danger:#df7065;
+  --panel:rgba(18,31,46,.90);--panel2:rgba(32,50,70,.96);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:
+  radial-gradient(circle at 14% -8%,rgba(78,132,159,.22),transparent 30%),
+  radial-gradient(circle at 90% 0%,rgba(182,126,67,.08),transparent 22%),
+  linear-gradient(180deg,#081421,#050b12 72%);
+  color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button{font:inherit}
+.page{width:min(1510px,calc(100% - 16px));margin:0 auto;padding:12px 0 26px}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:6px 2px 14px}
+.kicker{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#91bfdc;font-weight:850}
+h1{margin:6px 0 0;font-size:clamp(38px,7vw,84px);line-height:.88;letter-spacing:-.052em;
+background:linear-gradient(90deg,#fff 0%,#e6eff4 54%,#a8d0de 100%);
+-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{max-width:925px;margin-top:10px;color:var(--muted);font-size:13px;line-height:1.65}
+.pills{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.pill{padding:7px 11px;border-radius:999px;border:1px solid rgba(255,255,255,.095);background:rgba(255,255,255,.045);font-size:10px;font-weight:760;color:#dce7ef}
+.heroCard{width:310px;padding:16px 18px;border-radius:20px;border:1px solid rgba(255,255,255,.10);background:linear-gradient(180deg,rgba(43,66,89,.80),rgba(16,29,44,.96));box-shadow:0 24px 58px rgba(0,0,0,.30)}
+.heroCard .eyebrow{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);font-weight:850}.heroCard strong{display:block;font-size:24px;margin:5px 0}.heroCard small{color:#c8d5df;line-height:1.5}
+
+.shell{border:1px solid rgba(255,255,255,.085);border-radius:25px;overflow:hidden;background:linear-gradient(180deg,rgba(18,33,50,.98),rgba(8,17,28,.995));box-shadow:0 30px 82px rgba(0,0,0,.41)}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 13px;background:linear-gradient(180deg,rgba(47,73,98,.97),rgba(27,47,68,.97));border-bottom:1px solid rgba(255,255,255,.075)}
+.brand{display:flex;align-items:center;gap:10px}.crest{width:36px;height:36px;border-radius:11px;background:linear-gradient(135deg,#e2c46d,#87691f);box-shadow:inset 0 0 0 4px rgba(255,255,255,.12)}
+.brand strong{display:block;font-size:15px}.brand small{display:block;color:#c7d4df;font-size:10px;margin-top:2px}
+.stats{display:flex;gap:5px;flex-wrap:wrap}.stat{min-width:74px;padding:6px 7px;text-align:center;border-radius:10px;background:rgba(4,10,18,.4);border:1px solid rgba(255,255,255,.07)}
+.stat span{display:block;font-size:7.5px;text-transform:uppercase;letter-spacing:.09em;color:#91a7ba}.stat b{display:block;font-size:14px;margin-top:2px}
+
+.main{display:grid;grid-template-columns:minmax(0,1fr) 352px}
+.gameArea{padding:9px;border-right:1px solid rgba(255,255,255,.075)}
+.canvasWrap{position:relative;max-width:1120px;margin:0 auto;border-radius:18px;overflow:hidden;background:#0c1824;border:1px solid rgba(255,255,255,.08);box-shadow:0 22px 54px rgba(0,0,0,.31)}
+canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#5b7e85;image-rendering:auto}
+
+.overlay{position:absolute;inset:0;display:grid;place-items:center;background:rgba(4,9,16,.70);backdrop-filter:blur(8px);z-index:30}
+.overlay.hidden{display:none}
+.overlayCard{width:min(730px,93%);padding:21px;border-radius:22px;background:linear-gradient(180deg,rgba(49,73,96,.985),rgba(21,37,55,.995));border:1px solid rgba(255,255,255,.11);box-shadow:0 30px 84px rgba(0,0,0,.46);text-align:center}
+.label{font-size:10px;letter-spacing:.17em;text-transform:uppercase;color:var(--gold);font-weight:850}
+.bigTitle{font-size:clamp(31px,5vw,60px);line-height:.94;margin:7px 0 10px}.overlayCard p{font-size:13px;line-height:1.62;color:#dce6ed}
+.controlsGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px 0;text-align:left}.controlRow{border-radius:12px;padding:10px 11px;background:rgba(6,13,22,.28);border:1px solid rgba(255,255,255,.06);font-size:11px;color:#dce4eb}.controlRow b{color:#fff}
+.menuActions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{min-height:42px;padding:0 14px;border-radius:11px;border:1px solid rgba(255,255,255,.10);background:linear-gradient(180deg,#516b83,#35495e);color:#fff;font-weight:800;cursor:pointer;box-shadow:0 7px 16px rgba(0,0,0,.2)}
+.btn.gold{background:linear-gradient(180deg,#d7b85d,#9c792a);color:#111821}.btn.red{background:linear-gradient(180deg,#b85f59,#793d3a)}.btn:disabled{opacity:.42;cursor:not-allowed}.btn:hover:not(:disabled){filter:brightness(1.06)}
+.choiceGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}.choiceBtn{padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.09);background:rgba(7,15,25,.44);color:#fff;text-align:left;cursor:pointer}.choiceBtn:hover{background:rgba(255,255,255,.075)}.choiceBtn strong{display:block;font-size:13px}.choiceBtn span{display:block;color:#b8c6d1;font-size:10px;margin-top:4px;line-height:1.45}
+.note{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:#c7d3dc;font-size:10px;margin-top:8px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+
+.sidebar{padding:9px;background:#0e1a28}.panel{border-radius:15px;border:1px solid rgba(255,255,255,.075);padding:10px;margin-bottom:9px;background:linear-gradient(180deg,rgba(34,53,74,.965),rgba(20,34,51,.99));box-shadow:0 9px 22px rgba(0,0,0,.16)}
+.panel h2{font-size:13px;margin:0 0 9px;color:#ebcf7a}
+.member{display:grid;grid-template-columns:78px 1fr;gap:10px;align-items:center}
+.portrait{height:86px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:linear-gradient(180deg,#395975,#172b3e);position:relative;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+.portrait::after{content:"";position:absolute;inset:auto 0 0;height:26px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.32))}
+.portrait .head{position:absolute;left:28px;top:15px;width:24px;height:29px;border-radius:46% 46% 48% 48%;background:#c99d70;box-shadow:inset -5px -3px 0 rgba(95,60,37,.12)}
+.portrait .hair{position:absolute;left:26px;top:11px;width:28px;height:15px;border-radius:50% 50% 25% 25%;background:var(--hair,#654a36)}
+.portrait .coat{position:absolute;left:13px;bottom:-8px;width:54px;height:48px;border-radius:18px 18px 0 0;background:linear-gradient(135deg,var(--coat,#668fa9),rgba(32,47,63,.9))}
+.portrait .collar{position:absolute;left:32px;top:49px;width:15px;height:9px;background:#e6d4b4;clip-path:polygon(0 0,100% 0,50% 100%)}
+.portrait .badge{position:absolute;right:6px;bottom:6px;z-index:2;padding:3px 5px;border-radius:999px;background:rgba(7,14,23,.76);font-size:8px;color:#f1d478;font-weight:850;letter-spacing:.08em}
+.info{font-size:11px;line-height:1.48;color:#dce5ed}.info b{font-size:12px}.coolbar{height:7px;border-radius:999px;background:rgba(0,0,0,.3);overflow:hidden;margin-top:7px}.coolfill{height:100%;background:linear-gradient(90deg,#d8b65c,#f0d887);width:100%}
+.partyList{display:grid;gap:5px}.partyBtn{width:100%;display:grid;grid-template-columns:36px 1fr auto;gap:8px;align-items:center;text-align:left;padding:7px;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:rgba(7,15,25,.45);color:#fff;cursor:pointer}.partyBtn.active{outline:2px solid #d8b65c;background:rgba(216,182,92,.1)}.partyBtn.locked{opacity:.46;cursor:not-allowed}
+.mini{width:32px;height:32px;border-radius:9px;background:#435c71;display:grid;place-items:center;font-size:10px;font-weight:900}.partyBtn strong{font-size:11px}.partyBtn small{display:block;color:#9fb0c0;font-size:9px;margin-top:2px}.partyBtn span:last-child{font-size:9px;color:#d8b65c}
+.row{display:flex;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px dashed rgba(255,255,255,.12);font-size:11px}.row b{color:#fff}
+.eventLog{min-height:108px;max-height:150px;overflow:hidden;font-size:10px;line-height:1.45;color:#d8e0e7}.eventLine{padding:4px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.miniMap{position:relative;height:92px;border-radius:12px;overflow:hidden;background:linear-gradient(90deg,#30453a,#3e6c76 46%,#30453a);border:1px solid rgba(255,255,255,.07)}.mapRiver{position:absolute;left:50%;top:-18px;width:38px;height:132px;background:#629eae;transform:translateX(-50%) rotate(5deg);border-radius:46%}.mapDot{position:absolute;left:50%;width:11px;height:11px;border-radius:50%;background:#e5c767;transform:translate(-50%,-50%);box-shadow:0 0 0 5px rgba(229,199,103,.15)}
+.journalCard{padding:9px;border-radius:11px;background:linear-gradient(180deg,#d6c39d,#bba67f);color:#352d23;box-shadow:inset 0 0 0 1px rgba(83,58,35,.18);font-family:Georgia,serif}.journalCard b{display:block;font-size:11px}.journalCard span{display:block;font-size:9px;line-height:1.45;margin-top:3px}
+.footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#95a7b7;font-size:9px;padding:10px 2px 0}
+.banner{position:absolute;top:14%;left:50%;transform:translateX(-50%);z-index:12;pointer-events:none;width:min(610px,88%);padding:15px 17px;border-radius:17px;background:linear-gradient(180deg,rgba(12,22,34,.91),rgba(7,14,24,.96));border:1px solid rgba(255,255,255,.12);box-shadow:0 14px 36px rgba(0,0,0,.32);text-align:center;opacity:0;transition:opacity .25s}.banner.show{opacity:1}.banner small{display:block;font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#e2c56d;font-weight:850}.banner strong{display:block;font-size:23px;margin:3px 0}.banner span{font-size:10px;color:#cad6df}
+.modeTag{position:absolute;left:18px;bottom:18px;z-index:10;padding:7px 10px;border-radius:999px;background:rgba(6,13,22,.66);border:1px solid rgba(255,255,255,.09);font-size:9px;font-weight:850;letter-spacing:.12em;text-transform:uppercase;color:#e5d18a}
+
+@media(max-width:970px){.main{grid-template-columns:1fr}.gameArea{border-right:0;border-bottom:1px solid rgba(255,255,255,.08)}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:9px}.panel{margin:0}}
+@media(max-width:700px){.page{width:min(100% - 8px,1510px);padding-top:8px}.heroCard{display:none}.controlsGrid,.choiceGrid{grid-template-columns:1fr}.sidebar{display:block}.panel{margin-bottom:8px}.stats{width:100%}.stat{flex:1;min-width:62px}.portrait{height:78px}}
+</style>
+</head>
+<body>
+<main class="page">
+<section class="hero">
+  <div>
+    <div class="kicker">Shadow Dog Studios // Expedition Edition</div>
+    <h1>Corps of Discovery: Westward</h1>
+    <div class="sub">A continuous console-style Lewis and Clark expedition game. Navigate the Missouri, manage the party, survive environmental boss encounters, make historical decisions, unlock expedition members, and haul the Corps around the Great Falls in a fully playable two-act campaign.</div>
+    <div class="pills">
+      <span class="pill">Cinematic River Perspective</span><span class="pill">Act I + Act II</span><span class="pill">Great Falls Portage</span><span class="pill">Autosave / Continue</span><span class="pill">Keyboard + Controller</span>
+    </div>
+  </div>
+  <div class="heroCard"><div class="eyebrow">Campaign Build</div><strong>1804 → Summer 1805</strong><small>Camp River Dubois to Fort Mandan, then Fort Mandan to Decision Point and the Great Falls portage.</small></div>
+</section>
+
+<section class="shell">
+  <div class="topbar">
+    <div class="brand"><div class="crest"></div><div><strong>Corps of Discovery</strong><small id="routeText">Camp River Dubois • May 14, 1804</small></div></div>
+    <div class="stats">
+      <div class="stat"><span>Act</span><b id="actStat">I</b></div>
+      <div class="stat"><span>Miles*</span><b id="milesStat">0.0</b></div>
+      <div class="stat"><span>Vessel</span><b id="boatStat">100</b></div>
+      <div class="stat"><span>Food</span><b id="foodStat">100</b></div>
+      <div class="stat"><span>Morale</span><b id="moraleStat">100</b></div>
+      <div class="stat"><span>Discovery</span><b id="discStat">0</b></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <section class="gameArea">
+      <div class="canvasWrap">
+        <canvas id="game" width="1280" height="720" aria-label="Corps of Discovery expedition adventure"></canvas>
+        <div class="banner" id="banner"><small id="bannerDate"></small><strong id="bannerTitle"></strong><span id="bannerText"></span></div>
+        <div class="modeTag" id="modeTag">River Expedition</div>
+
+        <div class="overlay" id="startOverlay">
+          <div class="overlayCard">
+            <div class="label">Corps of Discovery</div>
+            <div class="bigTitle">Westward</div>
+            <p>Guide the expedition from the Missouri frontier into the upper river country. Your choices, resource management, steering, discoveries, and use of individual expedition members determine whether the Corps reaches the Great Falls ready to continue west.</p>
+            <div class="controlsGrid">
+              <div class="controlRow"><b>Steer / Move</b><br>A / D • Arrow Keys • Left Stick</div>
+              <div class="controlRow"><b>Push / Ease</b><br>W / S • Stick Up / Down</div>
+              <div class="controlRow"><b>Ability</b><br>F • Controller X</div>
+              <div class="controlRow"><b>Switch Member</b><br>Q / E • LB / RB</div>
+            </div>
+            <div class="menuActions">
+              <button class="btn gold" id="newBtn" type="button">New Expedition</button>
+              <button class="btn" id="continueBtn" type="button">Continue Expedition</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="intermissionOverlay">
+          <div class="overlayCard">
+            <div class="label" id="intermissionLabel">Winter 1804–1805</div>
+            <div class="bigTitle" id="intermissionTitle">Fort Mandan</div>
+            <p id="intermissionText"></p>
+            <button class="btn gold" id="intermissionBtn" type="button">Begin Act II</button>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="decisionOverlay">
+          <div class="overlayCard">
+            <div class="label">June 1805 • Decision Point</div>
+            <div class="bigTitle">Which River Is the Missouri?</div>
+            <p>The Corps has reached a major fork. Most of the men believe the muddy northern branch is the Missouri. Lewis and Clark suspect the clearer southern branch comes from the mountains and is the true route west.</p>
+            <div class="choiceGrid">
+              <button class="choiceBtn" id="southChoice" type="button"><strong>Take the Southern Branch</strong><span>Trust the captains' geographic reasoning and continue toward the mountains.</span></button>
+              <button class="choiceBtn" id="northChoice" type="button"><strong>Take the Northern Branch</strong><span>Follow the branch that looks more like the Missouri. This may cost time if the judgment is wrong.</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="portageIntroOverlay">
+          <div class="overlayCard">
+            <div class="label">June 1805 • Great Falls</div>
+            <div class="bigTitle">The River Ends Here</div>
+            <p>The Corps expected a short carry around a single waterfall. Instead, five falls and miles of rapids force an 18-mile overland portage. Haul the canoes and supplies across heat, rough ground, prickly pear, storms, and constant equipment strain.</p>
+            <div class="controlsGrid">
+              <div class="controlRow"><b>Guide the hauling rig</b><br>A / D • Left Stick</div>
+              <div class="controlRow"><b>Push harder</b><br>W • Stick Up</div>
+              <div class="controlRow"><b>Conserve stamina</b><br>S • Stick Down</div>
+              <div class="controlRow"><b>Member ability</b><br>F • Controller X</div>
+            </div>
+            <button class="btn gold" id="portageStartBtn" type="button">Begin the Portage</button>
+          </div>
+        </div>
+
+        <div class="overlay hidden" id="endOverlay">
+          <div class="overlayCard">
+            <div class="label">Campaign Complete</div>
+            <div class="bigTitle" id="endTitle">Beyond the Great Falls</div>
+            <p id="endText"></p>
+            <div class="menuActions"><button class="btn gold" id="restartBtn" type="button">Start a New Expedition</button></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="note"><span id="statusText">Choose New Expedition or Continue.</span><span id="controllerText">Keyboard ready</span></div>
+      <div class="actions">
+        <button class="btn" id="abilityBtn" type="button">Use Ability</button>
+        <button class="btn" id="prevBtn" type="button">Previous Member</button>
+        <button class="btn" id="nextBtn" type="button">Next Member</button>
+        <button class="btn" id="pauseBtn" type="button">Pause</button>
+        <button class="btn" id="saveBtn" type="button">Save</button>
+        <button class="btn" id="sfxBtn" type="button">SFX: On</button>
+      </div>
+    </section>
+
+    <aside class="sidebar">
+      <section class="panel">
+        <h2>Active Expedition Member</h2>
+        <div class="member">
+          <div class="portrait" id="portrait"><div class="head"></div><div class="hair"></div><div class="coat"></div><div class="collar"></div><div class="badge" id="portraitBadge">CAPTAIN</div></div>
+          <div class="info"><b id="memberName">William Clark</b><br><span id="memberRole">Mapping • Route Finding • Command</span><div class="coolbar"><div class="coolfill" id="abilityFill"></div></div></div>
+        </div>
+        <div class="info" id="abilityText" style="margin-top:8px"></div>
+      </section>
+
+      <section class="panel"><h2>Expedition Party</h2><div class="partyList" id="partyList"></div></section>
+
+      <section class="panel">
+        <h2 id="conditionsTitle">River Conditions</h2>
+        <div class="row"><span id="condition1Label">Current</span><b id="currentRead">Moderate</b></div>
+        <div class="row"><span id="condition2Label">Weather</span><b id="weatherRead">Clear</b></div>
+        <div class="row"><span id="condition3Label">Next Landmark</span><b id="landmarkRead">St. Charles</b></div>
+        <div class="row"><span>Controller</span><b id="padRead">Not detected</b></div>
+      </section>
+
+      <section class="panel">
+        <h2>Campaign Route</h2>
+        <div class="miniMap"><div class="mapRiver"></div><div class="mapDot" id="mapDot" style="top:7%"></div></div>
+        <div class="info" style="margin-top:7px">*Distances are compressed for gameplay. Milestone sequence and dates are historical.</div>
+      </section>
+
+      <section class="panel">
+        <h2>Field Journal</h2>
+        <div class="journalCard"><b id="journalTitle">Departure</b><span id="journalText">The Corps is preparing to move up the Missouri from Camp River Dubois.</span></div>
+      </section>
+
+      <section class="panel"><h2>Expedition Log</h2><div class="eventLog" id="eventLog"></div></section>
+    </aside>
+  </div>
+</section>
+<footer class="footer"><span>Historical milestones grounded in National Park Service Lewis & Clark National Historic Trail material.</span><span>No background music • SFX only • autosave • GitHub Pages ready</span></footer>
+</main>
+
+<script>
+(() => {
+"use strict";
+
+/* ---------- DOM / CANVAS ---------- */
+const canvas=document.getElementById("game"),ctx=canvas.getContext("2d");
+ctx.imageSmoothingEnabled=true;
+const $=id=>document.getElementById(id);
+const ui={
+ act:$("actStat"),miles:$("milesStat"),boat:$("boatStat"),food:$("foodStat"),morale:$("moraleStat"),disc:$("discStat"),route:$("routeText"),
+ status:$("statusText"),controller:$("controllerText"),startOverlay:$("startOverlay"),newBtn:$("newBtn"),continueBtn:$("continueBtn"),
+ intermissionOverlay:$("intermissionOverlay"),intermissionLabel:$("intermissionLabel"),intermissionTitle:$("intermissionTitle"),intermissionText:$("intermissionText"),intermissionBtn:$("intermissionBtn"),
+ decisionOverlay:$("decisionOverlay"),southChoice:$("southChoice"),northChoice:$("northChoice"),
+ portageIntroOverlay:$("portageIntroOverlay"),portageStartBtn:$("portageStartBtn"),
+ endOverlay:$("endOverlay"),endTitle:$("endTitle"),endText:$("endText"),restartBtn:$("restartBtn"),
+ abilityBtn:$("abilityBtn"),prevBtn:$("prevBtn"),nextBtn:$("nextBtn"),pauseBtn:$("pauseBtn"),saveBtn:$("saveBtn"),sfxBtn:$("sfxBtn"),
+ portrait:$("portrait"),portraitBadge:$("portraitBadge"),memberName:$("memberName"),memberRole:$("memberRole"),abilityText:$("abilityText"),abilityFill:$("abilityFill"),partyList:$("partyList"),
+ conditionsTitle:$("conditionsTitle"),condition1Label:$("condition1Label"),condition2Label:$("condition2Label"),condition3Label:$("condition3Label"),
+ currentRead:$("currentRead"),weatherRead:$("weatherRead"),landmarkRead:$("landmarkRead"),padRead:$("padRead"),
+ mapDot:$("mapDot"),journalTitle:$("journalTitle"),journalText:$("journalText"),eventLog:$("eventLog"),
+ banner:$("banner"),bannerDate:$("bannerDate"),bannerTitle:$("bannerTitle"),bannerText:$("bannerText"),modeTag:$("modeTag")
+};
+
+const W=canvas.width,H=canvas.height,HORIZON=122,BOAT_Y=610,LOOK=1700;
+const keys={},gamepadEdges={};
+let last=performance.now(),time=0,running=false,paused=false,ended=false,sfxOn=true,audioCtx=null,sfxGain=null;
+let mode="river",act=1,progress=0,activeMember=0,abilityCooldown=0,abilityActive=0;
+let hazards=[],discoveries=[],particles=[],rain=[],logLines=[],boss=null,nextBoss=0,lastLandmark=-1,bannerTimer=0,lightning=0,stormIntensity=0;
+let decisionResolved=false,wrongForkPenalty=0;
+let boat={offset:0,vx:0,health:100,food:100,morale:100,score:0};
+let portage={x:0,vx:0,progress:0,stamina:100,rig:100,morale:100,stage:1,obstacles:[],spawnTimer:0,boost:false};
+const SAVE_KEY="corps-discovery-westward-v3";
+
+/* ---------- DATA ---------- */
+const MEMBERS=[
+ {name:"William Clark",short:"WC",role:"Mapping • Route Finding • Command",ability:"Chart Route",desc:"Reduces current pull on the river. During the portage, reveals the safer trail lane.",color:"#b98558",hair:"#6b4b33",badge:"CAPTAIN",cooldown:8,unlockAct:1},
+ {name:"York",short:"Y",role:"Strength • Hunting • Morale",ability:"Haul",desc:"Greatly reduces collision damage. During the portage, increases hauling strength and protects the rig.",color:"#766151",hair:"#27211e",badge:"CORPS",cooldown:8,unlockAct:1},
+ {name:"George Drouillard",short:"GD",role:"Tracking • Scouting • Hunting",ability:"Scout",desc:"Marks hazards and discoveries farther ahead. During the portage, exposes trail obstacles.",color:"#9c8350",hair:"#3e3026",badge:"SCOUT",cooldown:8,unlockAct:1},
+ {name:"Meriwether Lewis",short:"ML",role:"Science • Medicine • Survey",ability:"Survey",desc:"Reveals discoveries and improves morale. During the portage, restores stamina through medical support.",color:"#6e98bf",hair:"#7a5738",badge:"CAPTAIN",cooldown:8,unlockAct:1,unlockAt:2200},
+ {name:"Sacagawea",short:"S",role:"Navigation • Gathering • Interpretation",ability:"Wayfind",desc:"Reduces food drain and reveals a better route. During the portage, restores morale and stamina.",color:"#68a77c",hair:"#31251e",badge:"GUIDE",cooldown:9,unlockAct:2}
+];
+
+const ACTS={
+  1:{
+    label:"Act I",title:"Up the Missouri",world:24500,milesDiv:46,
+    landmarks:[
+      {at:0,date:"May 14, 1804",name:"Camp River Dubois",text:"Clark and the Corps begin moving up the Missouri."},
+      {at:2200,date:"May 20–21, 1804",name:"St. Charles",text:"Lewis joins the expedition. The full Corps departs upriver on May 21."},
+      {at:4100,date:"May 23, 1804",name:"Tavern Cave",text:"Clark records pictographs near the mouth of Tavern Cave."},
+      {at:9000,date:"July 30, 1804",name:"Council Bluff",text:"The Corps establishes camp in the area of an important early diplomatic council."},
+      {at:13500,date:"August 20, 1804",name:"Floyd's Bluff",text:"Sergeant Charles Floyd dies and is buried with military honors above the river."},
+      {at:14900,date:"August 25, 1804",name:"Spirit Mound",text:"Lewis, Clark, and several men walk inland to Spirit Mound."},
+      {at:21600,date:"October 27, 1804",name:"Mandan Villages",text:"The expedition reaches Mandan communities near the Knife River."},
+      {at:24500,date:"November 2, 1804",name:"Fort Mandan Site",text:"The Corps selects the place where it will build winter quarters."}
+    ],
+    bosses:[
+      {at:2700,name:"HEADWIND & HEAVY RAIN",type:"storm",duration:20,reward:40},
+      {at:7300,name:"SNAG GAUNTLET",type:"snags",duration:19,reward:45},
+      {at:17000,name:"HEAVY MISSOURI CURRENT",type:"current",duration:22,reward:55},
+      {at:22500,name:"AUTUMN FREEZE",type:"cold",duration:20,reward:60}
+    ]
+  },
+  2:{
+    label:"Act II",title:"Into the Upper Missouri",world:18100,milesDiv:38,
+    landmarks:[
+      {at:0,date:"April 7, 1805",name:"Fort Mandan Departure",text:"The permanent party heads west in two pirogues and six dugout canoes. Sacagawea, Charbonneau, Jean Baptiste, and Seaman continue with the Corps."},
+      {at:3100,date:"April 25, 1805",name:"Yellowstone Confluence",text:"The Corps reaches the meeting of the Yellowstone and Missouri rivers."},
+      {at:6500,date:"May 8, 1805",name:"Milk River",text:"The expedition names the pale tributary Milk River."},
+      {at:10300,date:"May 29, 1805",name:"Slaughter River",text:"The Corps observes the remains of a large bison jump."},
+      {at:13400,date:"June 2–8, 1805",name:"Decision Point",text:"The Corps must decide which fork is the true Missouri."},
+      {at:17100,date:"June 13, 1805",name:"Great Falls",text:"Lewis sees the Great Falls, revealing a much larger obstacle than expected."}
+    ],
+    bosses:[
+      {at:4200,name:"SPRING HEADWINDS",type:"storm",duration:17,reward:45},
+      {at:9000,name:"WHITE CLIFFS CURRENT",type:"current",duration:20,reward:50},
+      {at:15100,name:"UPPER MISSOURI SNAGS",type:"snags",duration:18,reward:55}
+    ]
+  }
+};
+
+/* ---------- UTILITIES ---------- */
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function lerp(a,b,t){return a+(b-a)*t}
+function hash(n){const x=Math.sin(n*12.9898+78.233)*43758.5453;return x-Math.floor(x)}
+function riverCenter(y){
+  const shift=act===2?80:0;
+  return shift+Math.sin(y*.00155+act*.7)*205+Math.sin(y*.0041)*70+Math.sin(y*.00047)*105
+}
+function riverWidth(y){
+  const actBoost=act===2?35:0;
+  return 585+actBoost+Math.sin(y*.0011)*55+Math.sin(y*.003)*22
+}
+function currentAct(){return ACTS[act]}
+function currentLandmark(){let l=currentAct().landmarks[0];for(const v of currentAct().landmarks)if(v.at<=progress)l=v;return l}
+function nextLandmark(){for(const l of currentAct().landmarks)if(l.at>progress)return l;return currentAct().landmarks[currentAct().landmarks.length-1]}
+function isMemberUnlocked(m){if(m.unlockAct>act)return false;if(m.name==="Meriwether Lewis"&&act===1)return progress>=(m.unlockAt||0);return true}
+function addLog(msg){logLines.unshift(msg);logLines=logLines.slice(0,7);ui.eventLog.innerHTML=logLines.map(x=>`<div class="eventLine">${x}</div>`).join("")}
+function setJournal(title,text){ui.journalTitle.textContent=title;ui.journalText.textContent=text}
+function showBanner(date,title,text,duration=3.8){ui.bannerDate.textContent=date;ui.bannerTitle.textContent=title;ui.bannerText.textContent=text;ui.banner.classList.add("show");bannerTimer=duration}
+function rr(x,y,w,h,r,fill){ctx.fillStyle=fill;ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();ctx.fill()}
+
+/* ---------- SAVE / LOAD ---------- */
+function saveGame(show=true){
+  try{
+    const data={act,mode,progress,activeMember,boat,decisionResolved,wrongForkPenalty,
+      portage:{progress:portage.progress,stamina:portage.stamina,rig:portage.rig,morale:portage.morale,stage:portage.stage},
+      score:boat.score,timestamp:Date.now()};
+    localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+    ui.continueBtn.disabled=false;
+    if(show){ui.status.textContent="Expedition saved.";tone(540,.06,.025)}
+  }catch(e){if(show)ui.status.textContent="Save unavailable in this browser."}
+}
+function loadGame(){
+  let data=null;try{data=JSON.parse(localStorage.getItem(SAVE_KEY)||"null")}catch(e){}
+  if(!data)return false;
+  const savedMode=data.mode||"river";
+  act=data.act||1;progress=data.progress||0;activeMember=data.activeMember||0;
+  boat=Object.assign({offset:0,vx:0,health:100,food:100,morale:100,score:0},data.boat||{});
+  decisionResolved=!!data.decisionResolved;wrongForkPenalty=data.wrongForkPenalty||0;
+  portage=Object.assign(portage,data.portage||{});
+  initializeAct(false);
+  ui.startOverlay.classList.add("hidden");paused=false;ended=false;
+
+  if(savedMode==="portage"){
+    setupPortage(false);
+    if(portage.progress>=100){
+      running=false;
+      ui.intermissionLabel.textContent="July 1805";ui.intermissionTitle.textContent="The Portage Is Complete";
+      ui.intermissionText.textContent="The Corps has cleared the Great Falls portage and is ready to resume the westward journey.";
+      ui.intermissionBtn.textContent="Complete Campaign";ui.intermissionBtn.dataset.finish="yes";ui.intermissionOverlay.classList.remove("hidden");
+    }else{running=true;ui.status.textContent="Portage resumed from the saved expedition."}
+    return true;
+  }
+
+  mode="river";generateWorld();updateMilestones(true);
+  if(act===1 && progress>=ACTS[1].world){
+    running=false;actOneComplete();
+  }else if(act===2 && progress>=17100){
+    running=false;ui.portageIntroOverlay.classList.remove("hidden");ui.status.textContent="Great Falls reached. Begin the portage when ready.";
+  }else if(act===2 && progress>=13400 && !decisionResolved){
+    running=false;ui.decisionOverlay.classList.remove("hidden");ui.status.textContent="Decision Point restored from the saved expedition.";
+  }else{
+    running=true;ui.status.textContent="Expedition resumed from the last save.";
+  }
+  return true
+}
+function clearSave(){try{localStorage.removeItem(SAVE_KEY)}catch(e){}}
+
+/* ---------- AUDIO ---------- */
+function ensureAudio(){
+  if(audioCtx){if(audioCtx.state==="suspended")audioCtx.resume().catch(()=>{});return}
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  try{audioCtx=new AC()}catch(e){return}
+  sfxGain=audioCtx.createGain();sfxGain.gain.value=sfxOn?.36:0;sfxGain.connect(audioCtx.destination)
+}
+function tone(freq,dur=.08,gain=.035,type="sine"){
+  if(!sfxOn)return;ensureAudio();if(!audioCtx)return;
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain(),now=audioCtx.currentTime;
+  o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(gain,now);g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+  o.connect(g);g.connect(sfxGain);o.start(now);o.stop(now+dur+.02)
+}
+function noise(dur=.08,gain=.04){
+  if(!sfxOn)return;ensureAudio();if(!audioCtx)return;
+  const len=Math.max(1,Math.floor(audioCtx.sampleRate*dur)),buf=audioCtx.createBuffer(1,len,audioCtx.sampleRate),d=buf.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*(1-i/len);
+  const s=audioCtx.createBufferSource(),g=audioCtx.createGain();s.buffer=buf;g.gain.value=gain;s.connect(g);g.connect(sfxGain);s.start()
+}
+function hitSfx(){noise(.08,.05);tone(100,.07,.03,"triangle")}
+function discoverSfx(){tone(460,.07,.035);setTimeout(()=>tone(690,.11,.035),70)}
+function bossSfx(){tone(170,.16,.045,"sawtooth");setTimeout(()=>tone(125,.2,.04,"triangle"),120)}
+
+/* ---------- PARTY / UI ---------- */
+function buildParty(){
+  ui.partyList.innerHTML="";
+  MEMBERS.forEach((m,i)=>{
+    const unlocked=isMemberUnlocked(m);
+    const b=document.createElement("button");b.type="button";b.className=`partyBtn${i===activeMember?" active":""}${unlocked?"":" locked"}`;b.disabled=!unlocked;
+    let lockText=m.name==="Meriwether Lewis"?"Joins at St. Charles":m.name==="Sacagawea"?"Joins the westward permanent party in Act II":"Locked";
+    b.innerHTML=`<span class="mini">${unlocked?m.short:"🔒"}</span><span><strong>${m.name}</strong><small>${unlocked?m.role:lockText}</small></span><span>${unlocked?m.ability:"Locked"}</span>`;
+    if(unlocked)b.addEventListener("click",()=>switchMember(i));ui.partyList.appendChild(b)
+  })
+}
+function switchMember(i){
+  if(!MEMBERS[i]||!isMemberUnlocked(MEMBERS[i]))return;
+  activeMember=i;buildParty();updateUI();ui.status.textContent=`${MEMBERS[i].name} is leading.`;tone(360,.05,.025)
+}
+function switchRelative(dir){
+  const available=MEMBERS.map((m,j)=>({m,j})).filter(o=>isMemberUnlocked(o.m));
+  let idx=available.findIndex(o=>o.j===activeMember);if(idx<0)idx=0;idx=(idx+dir+available.length)%available.length;switchMember(available[idx].j)
+}
+function updatePortrait(){
+  const m=MEMBERS[activeMember];
+  ui.portrait.style.setProperty("--coat",m.color);ui.portrait.style.setProperty("--hair",m.hair);
+  ui.portraitBadge.textContent=m.badge;ui.memberName.textContent=m.name;ui.memberRole.textContent=m.role;
+  ui.abilityText.textContent=`${m.ability}: ${m.desc}`;ui.abilityFill.style.width=`${clamp(1-abilityCooldown/m.cooldown,0,1)*100}%`
+}
+function updateUI(){
+  ui.act.textContent=act===1?"I":act===2?"II":"—";
+  ui.miles.textContent=mode==="portage"?(portage.progress*18/100).toFixed(1):(progress/currentAct().milesDiv).toFixed(1);
+  ui.boat.textContent=mode==="portage"?Math.round(portage.rig):Math.round(boat.health);
+  ui.food.textContent=Math.round(boat.food);ui.morale.textContent=mode==="portage"?Math.round(portage.morale):Math.round(boat.morale);ui.disc.textContent=boat.score;
+  const pct=mode==="portage"?(.5+.5*portage.progress/100):((act-1)*.5+.5*progress/currentAct().world);ui.mapDot.style.top=`${clamp(7+pct*80,7,87)}%`;
+  updatePortrait();buildParty();
+  if(mode==="portage"){
+    ui.conditionsTitle.textContent="Portage Conditions";ui.condition1Label.textContent="Stamina";ui.currentRead.textContent=Math.round(portage.stamina);
+    ui.condition2Label.textContent="Rig";ui.weatherRead.textContent=Math.round(portage.rig);
+    ui.condition3Label.textContent="Stage";ui.landmarkRead.textContent=`${portage.stage}/3`;
+  }else{
+    ui.conditionsTitle.textContent="River Conditions";ui.condition1Label.textContent="Current";ui.currentRead.textContent=boss?.type==="current"?"Severe":boss?.type==="storm"?"Strong":"Moderate";
+    ui.condition2Label.textContent="Weather";ui.weatherRead.textContent=boss?.type==="storm"?"Heavy Rain":boss?.type==="cold"?"Freezing":"Clear";
+    ui.condition3Label.textContent="Next Landmark";ui.landmarkRead.textContent=nextLandmark().name;
+  }
+}
+
+/* ---------- GAME START / ACT TRANSITIONS ---------- */
+function resetCampaign(clearExisting=true){
+  act=1;mode="river";progress=0;activeMember=0;abilityCooldown=0;abilityActive=0;decisionResolved=false;wrongForkPenalty=0;
+  boat={offset:0,vx:0,health:100,food:100,morale:100,score:0};portage={x:0,vx:0,progress:0,stamina:100,rig:100,morale:100,stage:1,obstacles:[],spawnTimer:0,boost:false};
+  logLines=[];if(clearExisting)clearSave();delete ui.intermissionBtn.dataset.finish;initializeAct(true)
+}
+function initializeAct(resetResources=false){
+  mode="river";progress=clamp(progress,0,currentAct().world);hazards=[];discoveries=[];particles=[];rain=[];boss=null;nextBoss=0;lastLandmark=-1;bannerTimer=0;lightning=0;stormIntensity=0;
+  if(resetResources){boat.offset=0;boat.vx=0}
+  if(act===2){
+    if(activeMember===3||activeMember===4){} else activeMember=0;
+    boat.health=clamp(boat.health+15,0,100);boat.food=clamp(boat.food+30,0,100);boat.morale=clamp(boat.morale+18,0,100)
+  }
+  generateWorld();updateMilestones(true);updateUI();buildParty();ui.modeTag.textContent="River Expedition"
+}
+function startNew(){
+  ensureAudio();resetCampaign(true);ui.startOverlay.classList.add("hidden");running=true;paused=false;ended=false;
+  addLog("May 14, 1804 — the Corps moves up the Missouri from Camp River Dubois.");
+  ui.status.textContent="Keep the expedition in the main channel and watch the water ahead.";saveGame(false);tone(320,.06,.03);setTimeout(()=>tone(470,.09,.03),70)
+}
+function actOneComplete(){
+  running=false;delete ui.intermissionBtn.dataset.finish;ui.intermissionLabel.textContent="Winter 1804–1805";ui.intermissionTitle.textContent="Fort Mandan";
+  ui.intermissionText.textContent="The Corps winters near the Mandan and Hidatsa villages. Maps, journals, specimens, and dispatches are prepared for the return keelboat. Toussaint Charbonneau, Sacagawea, and infant Jean Baptiste become part of the permanent westward party. On April 7, 1805, the expedition will continue upstream without the keelboat.";
+  ui.intermissionBtn.textContent="Depart Fort Mandan — Act II";ui.intermissionOverlay.classList.remove("hidden");saveGame(false)
+}
+function beginActTwo(){
+  act=2;progress=0;activeMember=0;decisionResolved=false;wrongForkPenalty=0;initializeAct(true);running=true;
+  ui.intermissionOverlay.classList.add("hidden");ui.route.textContent="Fort Mandan Departure • April 7, 1805";
+  addLog("April 7, 1805 — the permanent party departs Fort Mandan in two pirogues and six dugout canoes.");
+  showBanner("April 7, 1805","Act II — Into the Upper Missouri","Sacagawea joins the playable expedition party.",4.5);setJournal("A New Fleet","The keelboat turns back toward St. Louis. The permanent party continues west in smaller craft.");saveGame(false)
+}
+function beginPortage(){
+  ui.portageIntroOverlay.classList.add("hidden");setupPortage(true);running=true;saveGame(false)
+}
+function setupPortage(reset=true){
+  mode="portage";ui.modeTag.textContent="Great Falls Portage";boss=null;hazards=[];discoveries=[];rain=[];particles=[];
+  if(reset)portage={x:0,vx:0,progress:0,stamina:100,rig:100,morale:boat.morale,stage:1,obstacles:[],spawnTimer:0,boost:false};
+  ui.route.textContent="Great Falls Portage • June–July 1805";setJournal("The Portage","Five falls and an 18-mile carry force the Corps onto the prairie.");updateUI()
+}
+function campaignComplete(){
+  running=false;ended=true;mode="complete";clearSave();ui.endOverlay.classList.remove("hidden");
+  ui.endTitle.textContent="Beyond the Great Falls";
+  ui.endText.textContent=`You completed the two-act Expedition Edition with ${Math.round(boat.food)}% food, ${Math.round(portage.rig)}% portage rig condition, ${Math.round(portage.morale)}% morale, and ${boat.score} discovery points. On July 15, 1805, the Corps resumed its journey up the Missouri after the Great Falls portage.`;
+  discoverSfx()
+}
+
+/* ---------- MILESTONES ---------- */
+function updateMilestones(silent=false){
+  const list=currentAct().landmarks;
+  for(let i=lastLandmark+1;i<list.length;i++){
+    if(progress>=list[i].at){
+      lastLandmark=i;const l=list[i];ui.route.textContent=`${l.name} • ${l.date}`;setJournal(l.name,l.text);
+      if(!silent){addLog(`${l.date} — ${l.name}: ${l.text}`);showBanner(l.date,l.name,l.text,4)}
+      if(act===1&&i===1&&!silent){addLog("Meriwether Lewis joins the Corps at St. Charles.");tone(520,.08,.04);setTimeout(()=>tone(680,.1,.035),70)}
+      if(act===1&&i===4&&!silent){boat.morale=clamp(boat.morale-5,0,100);ui.status.textContent="The Corps pauses to bury Sergeant Charles Floyd with military honors."}
+      if(act===2&&l.name==="Decision Point"&&!decisionResolved&&!silent){
+        running=false;ui.decisionOverlay.classList.remove("hidden");saveGame(false);return
+      }
+      if(act===2&&l.name==="Great Falls"&&!silent){
+        running=false;ui.portageIntroOverlay.classList.remove("hidden");saveGame(false);return
+      }
+      saveGame(false)
+    }else break
+  }
+}
+
+/* ---------- DECISION POINT ---------- */
+function resolveDecision(correct){
+  ui.decisionOverlay.classList.add("hidden");decisionResolved=true;
+  if(correct){
+    boat.score+=35;boat.morale=clamp(boat.morale+4,0,100);addLog("Decision Point: the Corps follows the southern branch—the Missouri. +35 discovery score.");
+    showBanner("June 1805","Correct Course","The southern branch leads toward the mountains.",3.4)
+  }else{
+    wrongForkPenalty=780;progress=Math.max(12000,progress-650);boat.food=clamp(boat.food-6,0,100);boat.morale=clamp(boat.morale-7,0,100);
+    addLog("Decision Point: the northern fork proves wrong. The Corps backtracks, losing food and morale.");
+    showBanner("June 1805","Wrong Fork","The expedition turns back and regains the Missouri.",3.8)
+  }
+  lastLandmark=4;running=true;saveGame(false)
+}
+
+/* ---------- WORLD GENERATION ---------- */
+function generateWorld(){
+  hazards=[];discoveries=[];
+  const kinds=["rock","snag","sandbar"];
+  const world=currentAct().world;
+  for(let y=650;y<world-250;y+=175+hash(y+act*1000)*155){
+    const c=riverCenter(y),w=riverWidth(y),lane=(hash(y*3+act)-.5)*w*.62;
+    hazards.push({x:c+lane,y,type:kinds[Math.floor(hash(y*4+act)*kinds.length)],hit:false,revealed:false})
+  }
+  const finds=act===1?[
+    ["Botanical Specimen","A plant specimen is added to the expedition record."],["River Bird","The Corps records wildlife along the Missouri."],["Animal Tracks","Drouillard identifies fresh tracks."],["High Bluff","Clark adds a landmark to the map."],["Prairie Dog Colony","The Corps observes unfamiliar prairie wildlife."],["Fossil Fragment","The Corps notes evidence of an ancient landscape."]
+  ]:[
+    ["Pronghorn Herd","The Corps records fast-moving plains wildlife."],["River Confluence","Clark adds another important junction to the map."],["White Cliffs","The expedition enters striking pale river bluffs."],["Bison Herd","The Corps observes immense numbers of bison."],["Botanical Specimen","Lewis records another upper-Missouri plant."],["Mountain Sign","Distant landforms suggest the Rockies are drawing nearer."]
+  ];
+  for(let y=950;y<world-500;y+=520+hash(y*7+act)*410){
+    const c=riverCenter(y),w=riverWidth(y),side=hash(y*5+act)>.5?1:-1,item=finds[Math.floor(hash(y*8+act)*finds.length)];
+    discoveries.push({x:c+side*w*(.24+hash(y*9)*.14),y,name:item[0],desc:item[1],taken:false,revealed:false})
+  }
+}
+
+/* ---------- INPUT ---------- */
+window.addEventListener("keydown",e=>{
+  const k=e.key.toLowerCase();keys[k]=true;if(["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k))e.preventDefault();
+  if(k==="f")useAbility();if(k==="q")switchRelative(-1);if(k==="e")switchRelative(1);if(k===" ")togglePause()
+});
+window.addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+function gamepad(){
+  const pads=navigator.getGamepads?navigator.getGamepads():[],p=[...pads].find(Boolean);
+  if(!p){ui.padRead.textContent="Not detected";ui.controller.textContent="Keyboard ready";return{x:0,y:0}}
+  ui.padRead.textContent=p.id.slice(0,18);ui.controller.textContent="Controller connected";
+  const dead=v=>Math.abs(v)<.18?0:v,btn=i=>!!p.buttons[i]?.pressed,edge=i=>{const n=btn(i),o=!!gamepadEdges[i];gamepadEdges[i]=n;return n&&!o};
+  if(edge(2))useAbility();if(edge(4))switchRelative(-1);if(edge(5))switchRelative(1);if(edge(9))togglePause();
+  return{x:dead(p.axes[0]||0),y:dead(p.axes[1]||0)}
+}
+function togglePause(){if(!running)return;paused=!paused;ui.pauseBtn.textContent=paused?"Resume":"Pause";ui.status.textContent=paused?"Expedition paused.":"Expedition resumed."}
+
+/* ---------- ABILITIES ---------- */
+function useAbility(){
+  if(!running||paused||abilityCooldown>0)return;
+  const m=MEMBERS[activeMember];abilityCooldown=m.cooldown;abilityActive=5;
+  if(mode==="river"){
+    if(activeMember===0)ui.status.textContent="Clark charts the channel. Current pull is reduced.";
+    if(activeMember===1)ui.status.textContent="York takes the strain. Collision damage is greatly reduced.";
+    if(activeMember===2){hazards.forEach(h=>{if(h.y>progress&&h.y<progress+1750)h.revealed=true});discoveries.forEach(d=>{if(d.y>progress&&d.y<progress+1750)d.revealed=true});ui.status.textContent="Drouillard scouts ahead. Hazards and discoveries are marked."}
+    if(activeMember===3){discoveries.forEach(d=>{if(d.y>progress&&d.y<progress+1550)d.revealed=true});boat.morale=clamp(boat.morale+4,0,100);ui.status.textContent="Lewis surveys the country and steadies morale."}
+    if(activeMember===4){boat.food=clamp(boat.food+8,0,100);boat.morale=clamp(boat.morale+3,0,100);ui.status.textContent="Sacagawea identifies useful food and helps guide the party."}
+  }else if(mode==="portage"){
+    if(activeMember===0){portage.obstacles.forEach(o=>o.revealed=true);ui.status.textContent="Clark identifies the best line through the portage trail."}
+    if(activeMember===1){portage.stamina=clamp(portage.stamina+22,0,100);ui.status.textContent="York takes the heaviest pull. Stamina restored."}
+    if(activeMember===2){portage.obstacles.forEach(o=>o.revealed=true);ui.status.textContent="Drouillard scouts the trail. Obstacles revealed."}
+    if(activeMember===3){portage.stamina=clamp(portage.stamina+18,0,100);portage.rig=clamp(portage.rig+7,0,100);ui.status.textContent="Lewis treats injuries and checks the hauling rig."}
+    if(activeMember===4){portage.stamina=clamp(portage.stamina+12,0,100);portage.morale=clamp(portage.morale+10,0,100);ui.status.textContent="Sacagawea helps the party recover and reorganize."}
+  }
+  tone(520,.08,.035);setTimeout(()=>tone(650,.08,.03),60)
+}
+
+/* ---------- RIVER UPDATE ---------- */
+function triggerBoss(def){boss={...def,time:def.duration,max:def.duration};bossSfx();showBanner("Environmental Challenge",def.name,"Survive the river condition and keep the expedition together.",3);addLog(`Environmental boss: ${def.name}.`)}
+function bossUpdate(dt){
+  const defs=currentAct().bosses;
+  if(!boss&&nextBoss<defs.length&&progress>=defs[nextBoss].at){triggerBoss(defs[nextBoss]);nextBoss++}
+  if(!boss)return;
+  boss.time-=dt;
+  if(boss.type==="storm"){stormIntensity=1;if(Math.random()<dt*.7)rain.push({x:Math.random()*W,y:-30,len:20+Math.random()*24,speed:480+Math.random()*180});if(Math.random()<dt*.07)lightning=.17}
+  if(boss.type==="snags"&&Math.random()<dt*.18){const y=progress+LOOK*(.65+Math.random()*.3),c=riverCenter(y),w=riverWidth(y);hazards.push({x:c+(Math.random()-.5)*w*.65,y,type:"snag",hit:false,revealed:true})}
+  if(boss.type==="cold"){boat.morale=clamp(boat.morale-dt*.22,0,100);boat.food=clamp(boat.food-dt*.18,0,100)}
+  if(boss.time<=0){boat.score+=boss.reward;boat.morale=clamp(boat.morale+6,0,100);addLog(`${boss.name} overcome. +${boss.reward} discovery score.`);ui.status.textContent=`${boss.name} overcome.`;discoverSfx();boss=null;stormIntensity=0}
+}
+function damage(amount,msg){
+  const york=activeMember===1&&abilityActive>0,dmg=amount*(york?.35:1);
+  boat.health=clamp(boat.health-dmg,0,100);boat.morale=clamp(boat.morale-dmg*.16,0,100);ui.status.textContent=msg;hitSfx();
+  for(let i=0;i<14;i++)particles.push({x:boatScreenX()+Math.random()*20-10,y:BOAT_Y+Math.random()*10-5,vx:(Math.random()-.5)*70,vy:-20-Math.random()*50,life:.6,size:2+Math.random()*4,color:"#ead7ad"})
+}
+function updateRiver(dt,pad){
+  const lr=clamp(((keys["d"]||keys["arrowright"])?1:0)-((keys["a"]||keys["arrowleft"])?1:0)+pad.x,-1,1);
+  const throttle=clamp(((keys["w"]||keys["arrowup"])?1:0)-((keys["s"]||keys["arrowdown"])?1:0)-pad.y,-1,1);
+  const clark=activeMember===0&&abilityActive>0,sac=activeMember===4&&abilityActive>0;
+  let pull=Math.sin(progress*.006+time*.6)*18+(riverCenter(progress+160)-riverCenter(progress))*.28;
+  if(boss?.type==="current")pull*=2.5;if(boss?.type==="storm")pull+=Math.sin(time*2.3)*75;if(clark)pull*=.35;
+  boat.vx+=(lr*180+pull-boat.vx)*dt*3.0;boat.offset+=boat.vx*dt;
+  const half=riverWidth(progress)*.45;
+  if(boat.offset<-half){boat.offset=-half;boat.vx=75;damage(7,"The expedition grinds against the left bank.")}
+  if(boat.offset>half){boat.offset=half;boat.vx=-75;damage(7,"The expedition grinds against the right bank.")}
+  let speed=(act===1?115:122)+throttle*32+(boat.morale-50)*.10;if(boss?.type==="storm")speed-=25;if(boss?.type==="current")speed-=14;if(boss?.type==="cold")speed-=18;
+  progress+=Math.max(55,speed)*dt;
+  const foodDrain=(act===1?.065:.075)*(sac?.58:1);boat.food=clamp(boat.food-dt*(foodDrain+(throttle>0?.025:0)),0,100);
+  if(boat.food<18)boat.morale=clamp(boat.morale-dt*.18,0,100);else boat.morale=clamp(boat.morale+dt*.012,0,100);
+  bossUpdate(dt);updateMilestones(false);
+  if(!running)return;
+  const bx=riverCenter(progress)+boat.offset;
+  hazards.forEach(h=>{
+    if(h.hit||h.y<progress-70||h.y>progress+85)return;
+    if(Math.hypot(h.x-bx,(h.y-progress)*.55)<38){h.hit=true;damage(h.type==="sandbar"?4:9,h.type==="rock"?"The boat strikes a submerged rock.":h.type==="snag"?"A submerged snag catches the hull.":"The boats ground on a sandbar.")}
+  });
+  discoveries.forEach(d=>{
+    if(d.taken)return;if(d.y-progress<280&&d.y>progress-30)d.revealed=true;
+    if(d.revealed&&Math.abs(d.y-progress)<88&&Math.abs(d.x-bx)<78){d.taken=true;boat.score+=25;boat.morale=clamp(boat.morale+2.5,0,100);addLog(`${d.name}: ${d.desc}`);ui.status.textContent=`Discovery recorded: ${d.name}`;discoverSfx()}
+  });
+  if(act===1&&progress>=ACTS[1].world){progress=ACTS[1].world;actOneComplete()}
+  if(act===2&&progress>=17100&&lastLandmark>=5){progress=17100}
+}
+
+/* ---------- PORTAGE ---------- */
+function spawnPortageObstacle(){
+  const kinds=portage.stage===1?["cactus","rock","rut"]:portage.stage===2?["cactus","rock","snake","rut"]:["hail","rock","cactus","rut"];
+  const lane=(Math.floor(Math.random()*5)-2)*105;
+  portage.obstacles.push({x:lane,y:HORIZON+25,kind:kinds[Math.floor(Math.random()*kinds.length)],speed:105+portage.stage*18+Math.random()*25,revealed:false,hit:false})
+}
+function portageHit(o){
+  if(o.hit)return;o.hit=true;
+  let rigD=0,staD=0,morD=0;
+  if(o.kind==="cactus"){staD=12;morD=3;ui.status.textContent="Prickly pear tears at feet and moccasins."}
+  if(o.kind==="rock"){rigD=10;staD=6;ui.status.textContent="The hauling rig slams across rough rock."}
+  if(o.kind==="rut"){rigD=7;staD=9;ui.status.textContent="A wheel catches in a deep rut."}
+  if(o.kind==="snake"){morD=7;staD=5;ui.status.textContent="A rattlesnake forces the crew off line."}
+  if(o.kind==="hail"){rigD=5;staD=10;morD=6;ui.status.textContent="A violent hail squall pounds the portage party."}
+  if(activeMember===1&&abilityActive>0){rigD*=.35;staD*=.45}
+  portage.rig=clamp(portage.rig-rigD,0,100);portage.stamina=clamp(portage.stamina-staD,0,100);portage.morale=clamp(portage.morale-morD,0,100);hitSfx()
+}
+function updatePortage(dt,pad){
+  const lr=clamp(((keys["d"]||keys["arrowright"])?1:0)-((keys["a"]||keys["arrowleft"])?1:0)+pad.x,-1,1);
+  const throttle=clamp(((keys["w"]||keys["arrowup"])?1:0)-((keys["s"]||keys["arrowdown"])?1:0)-pad.y,-1,1);
+  portage.boost=throttle>.2;
+  portage.vx+=(lr*215-portage.vx)*dt*4;portage.x=clamp(portage.x+portage.vx*dt,-235,235);
+  let pace=7.0;
+  if(portage.boost&&portage.stamina>5){pace+=4.2;portage.stamina=clamp(portage.stamina-dt*3.4,0,100)}
+  else if(throttle<-.2){pace-=2.0;portage.stamina=clamp(portage.stamina+dt*5.0,0,100)}
+  else portage.stamina=clamp(portage.stamina+dt*2.1,0,100);
+  if(portage.stamina<18)pace*=.72;
+  if(activeMember===1&&abilityActive>0)pace*=1.22;
+  portage.progress=clamp(portage.progress+pace*dt*.72,0,100);
+  portage.stage=portage.progress<34?1:portage.progress<68?2:3;
+  portage.spawnTimer-=dt;if(portage.spawnTimer<=0){spawnPortageObstacle();portage.spawnTimer=.62+Math.random()*.48}
+  portage.obstacles.forEach(o=>{o.y+=o.speed*dt;if(!o.hit&&o.y>H-170&&o.y<H-65&&Math.abs(o.x-portage.x)<48)portageHit(o)});
+  portage.obstacles=portage.obstacles.filter(o=>o.y<H+70&&!o.hit);
+  portage.morale=clamp(portage.morale-dt*(portage.stage===3?.035:.018),0,100);
+  if(portage.stage===3&&Math.random()<dt*.08)ui.status.textContent="Heat, hail, mosquitoes, and rough ground wear down the crew.";
+  if(portage.rig<=0||portage.morale<=0){running=false;ended=true;ui.endOverlay.classList.remove("hidden");ui.endTitle.textContent="Portage Failed";ui.endText.textContent="The hauling rig or party morale collapsed before the Corps could clear the Great Falls. Restart the campaign and conserve resources more carefully.";return}
+  if(portage.progress>=100){
+    portage.progress=100;boat.score+=100;portage.morale=clamp(portage.morale+8,0,100);saveGame(false);
+    running=false;
+    ui.intermissionLabel.textContent="July 1805";ui.intermissionTitle.textContent="The Portage Is Complete";
+    ui.intermissionText.textContent="After weeks of hauling boats and supplies around the Great Falls, the Corps reaches the upper portage. Lewis's iron-frame boat experiment cannot be made watertight with the materials available, so the expedition turns to dugout canoes. On July 15, the Corps resumes its westward journey.";
+    ui.intermissionBtn.textContent="Complete Campaign";ui.intermissionOverlay.classList.remove("hidden");ui.intermissionBtn.dataset.finish="yes";
+  }
+}
+
+/* ---------- MAIN UPDATE ---------- */
+function update(dt){
+  if(!running||paused||ended)return;
+  time+=dt;if(bannerTimer>0){bannerTimer-=dt;if(bannerTimer<=0)ui.banner.classList.remove("show")}if(lightning>0)lightning-=dt;
+  if(abilityCooldown>0)abilityCooldown=Math.max(0,abilityCooldown-dt);if(abilityActive>0)abilityActive=Math.max(0,abilityActive-dt);
+  const pad=gamepad();
+  if(mode==="river")updateRiver(dt,pad);else if(mode==="portage")updatePortage(dt,pad);
+  particles.forEach(p=>{p.life-=dt;p.x+=p.vx*dt;p.y+=p.vy*dt});particles=particles.filter(p=>p.life>0);
+  rain.forEach(r=>{r.x-=180*dt;r.y+=r.speed*dt});rain=rain.filter(r=>r.y<H+40);
+  if(!boss||boss.type!=="storm")stormIntensity=Math.max(0,stormIntensity-dt*.6);
+  if(mode==="river"&&(boat.health<=0||boat.morale<=0)){
+    running=false;ended=true;ui.endOverlay.classList.remove("hidden");ui.endTitle.textContent="Expedition Halted";ui.endText.textContent="The Corps can no longer continue. Restart and use the expedition members' abilities more strategically."
+  }
+  updateUI()
+}
+
+/* ---------- RIVER PROJECTION / GRAPHICS ---------- */
+function project(worldX,worldY){
+  const d=worldY-progress;if(d<-120||d>LOOK)return null;
+  const t=clamp(d/LOOK,0,1),p=Math.pow(t,.60),y=BOAT_Y-p*(BOAT_Y-HORIZON),scale=lerp(1.38,.28,p);
+  const futureBend=(riverCenter(worldY)-riverCenter(progress))*.43*scale,x=W/2+futureBend+(worldX-riverCenter(worldY))*scale;
+  return{x,y,scale,t}
+}
+function boatScreenX(){return W/2+boat.offset*1.14}
+function drawSky(){
+  const phase=act===1?progress/ACTS[1].world:progress/ACTS[2].world;
+  const act2=act===2;
+  const top=act2?"#74a5b9":phase>.75?"#6f8296":"#77a7bf",mid=act2?"#a7c4c9":phase>.75?"#9da3a3":"#a8c8d3",bottom=act2?"#e5ddc8":phase>.75?"#d6bb8e":"#dde8eb";
+  const g=ctx.createLinearGradient(0,0,0,HORIZON+145);g.addColorStop(0,top);g.addColorStop(.58,mid);g.addColorStop(1,bottom);ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const sunX=1045-phase*225,sunY=72+phase*20,sg=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,85);sg.addColorStop(0,"rgba(255,242,190,.72)");sg.addColorStop(.42,"rgba(255,228,160,.22)");sg.addColorStop(1,"rgba(255,228,160,0)");ctx.fillStyle=sg;ctx.beginPath();ctx.arc(sunX,sunY,85,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="rgba(255,236,183,.62)";ctx.beginPath();ctx.arc(sunX,sunY,29,0,Math.PI*2);ctx.fill();
+  for(let i=0;i<7;i++){const x=(i*190+(time*4)%170)%(W+220)-110,y=44+(i%3)*24+Math.sin(i*1.7+time*.05)*4;ctx.fillStyle="rgba(255,255,255,.13)";ctx.beginPath();ctx.ellipse(x,y,58,16,0,0,Math.PI*2);ctx.ellipse(x+36,y+2,52,14,0,0,Math.PI*2);ctx.ellipse(x-34,y+4,46,13,0,0,Math.PI*2);ctx.fill()}
+  const haze=ctx.createLinearGradient(0,HORIZON-20,0,HORIZON+100);haze.addColorStop(0,"rgba(240,244,246,0)");haze.addColorStop(1,"rgba(240,244,246,.24)");ctx.fillStyle=haze;ctx.fillRect(0,HORIZON-20,W,125);
+  const hills=act2?"rgba(91,87,69,.42)":"rgba(72,93,82,.40)";ctx.fillStyle=hills;ctx.beginPath();ctx.moveTo(0,HORIZON+18);for(let x=0;x<=W;x+=60)ctx.lineTo(x,HORIZON-6+Math.sin(x*.012+act)*19);ctx.lineTo(W,HORIZON+110);ctx.lineTo(0,HORIZON+110);ctx.closePath();ctx.fill();
+  ctx.fillStyle=act2?"rgba(82,79,60,.56)":"rgba(56,78,67,.58)";ctx.beginPath();ctx.moveTo(0,HORIZON+46);for(let x=0;x<=W;x+=55)ctx.lineTo(x,HORIZON+18+Math.sin(x*.017+1)*16);ctx.lineTo(W,HORIZON+130);ctx.lineTo(0,HORIZON+130);ctx.closePath();ctx.fill()
+}
+function drawRiver(){
+  const land=ctx.createLinearGradient(0,HORIZON,0,H);land.addColorStop(0,act===2?"#8b8b62":"#718a5f");land.addColorStop(.6,act===2?"#777b52":"#5f784f");land.addColorStop(1,act===2?"#5c6742":"#49643f");ctx.fillStyle=land;ctx.fillRect(0,HORIZON,W,H-HORIZON);
+  const left=[],right=[];
+  for(let d=LOOK;d>=-110;d-=22){const wy=progress+d,c=riverCenter(wy),w=riverWidth(wy),pl=project(c-w/2,wy),pr=project(c+w/2,wy);if(pl&&pr){left.push(pl);right.push(pr)}}
+  const water=ctx.createLinearGradient(0,HORIZON,0,H);water.addColorStop(0,act===2?"#7099a1":"#6d97a0");water.addColorStop(.35,act===2?"#628a94":"#5b8a95");water.addColorStop(.72,"#3f7281");water.addColorStop(1,"#284e60");
+  ctx.fillStyle=water;ctx.beginPath();ctx.moveTo(left[0].x,left[0].y);left.forEach(p=>ctx.lineTo(p.x,p.y));
+  const foregroundHalf=riverWidth(progress)*.62,bottomLeftX=W/2-foregroundHalf,bottomRightX=W/2+foregroundHalf;ctx.lineTo(bottomLeftX,H);ctx.lineTo(bottomRightX,H);for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i].x,right[i].y);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(231,218,175,.48)";ctx.lineWidth=4.5;ctx.beginPath();left.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineTo(bottomLeftX,H);ctx.stroke();ctx.beginPath();right.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineTo(bottomRightX,H);ctx.stroke();
+  for(let i=0;i<32;i++){const d=((i*73+time*54)%LOOK),wy=progress+d,c=riverCenter(wy),w=riverWidth(wy),off=(hash(i*91)-.5)*w*.60,p1=project(c+off-42,wy),p2=project(c+off+42,wy);if(p1&&p2){ctx.strokeStyle=`rgba(230,245,246,${.06+p1.scale*.11})`;ctx.lineWidth=Math.max(1,p1.scale*2.2);ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.quadraticCurveTo((p1.x+p2.x)/2,p1.y-3*p1.scale,p2.x,p2.y);ctx.stroke()}}
+  for(let i=0;i<9;i++){const y=H-18-i*22,width=260+i*38;ctx.strokeStyle=`rgba(214,234,239,${.035+i*.006})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2-width,y);ctx.quadraticCurveTo(W/2,y-8,W/2+width,y);ctx.stroke()}
+}
+function drawBankLife(){
+  const start=Math.floor(progress/90)-3,end=start+26;
+  for(let n=start;n<end;n++){
+    const wy=n*90+45;if(wy<0||wy>currentAct().world)continue;
+    const c=riverCenter(wy),w=riverWidth(wy),side=hash(n*2+act)>.5?1:-1,dist=w/2+34+hash(n*3)*115,p=project(c+side*dist,wy);if(!p)continue;const s=p.scale;
+    ctx.fillStyle=`rgba(164,138,95,${.08+s*.10})`;ctx.beginPath();ctx.ellipse(p.x,p.y+8*s,34*s,12*s,0,0,Math.PI*2);ctx.fill();
+    if(hash(n*5)>.22){ctx.fillStyle=`rgba(0,0,0,${.08+s*.12})`;ctx.beginPath();ctx.ellipse(p.x,p.y+2*s,26*s,9*s,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle="#674d37";ctx.lineWidth=Math.max(1,5*s);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-38*s);ctx.stroke();ctx.fillStyle=act===2?"#67724d":hash(n*7)>.5?"#3f7448":"#4e8253";ctx.beginPath();ctx.arc(p.x,p.y-48*s,26*s,0,Math.PI*2);ctx.fill();ctx.fillStyle=act===2?"#78805a":"#659a62";ctx.beginPath();ctx.arc(p.x+12*s,p.y-55*s,18*s,0,Math.PI*2);ctx.fill()}
+    if(hash(n*11)>.92&&s>.35){ctx.fillStyle="#493c31";ctx.beginPath();ctx.ellipse(p.x+35*side*s,p.y-7*s,13*s,7*s,0,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(p.x+46*side*s,p.y-12*s,5*s,0,Math.PI*2);ctx.fill()}
+  }
+}
+function drawHazard(h){
+  if(h.hit)return;const p=project(h.x,h.y);if(!p)return;const s=p.scale;ctx.fillStyle=`rgba(0,0,0,${.10+s*.12})`;ctx.beginPath();ctx.ellipse(p.x,p.y+7*s,26*s,10*s,0,0,Math.PI*2);ctx.fill();
+  if(h.type==="rock"){const g=ctx.createLinearGradient(p.x-18*s,p.y-12*s,p.x+18*s,p.y+14*s);g.addColorStop(0,"#c0b7a0");g.addColorStop(.5,"#8e8879");g.addColorStop(1,"#5c5d55");ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(p.x,p.y,22*s,15*s,-.2,0,Math.PI*2);ctx.fill()}
+  else if(h.type==="snag"){ctx.strokeStyle="#4b3a2e";ctx.lineWidth=Math.max(2,7*s);ctx.lineCap="round";ctx.beginPath();ctx.moveTo(p.x-19*s,p.y+14*s);ctx.lineTo(p.x+18*s,p.y-14*s);ctx.stroke();ctx.lineWidth=Math.max(1,4*s);ctx.beginPath();ctx.moveTo(p.x-3*s,p.y+1*s);ctx.lineTo(p.x+18*s,p.y+8*s);ctx.stroke()}
+  else{const g=ctx.createLinearGradient(p.x,p.y-8*s,p.x,p.y+12*s);g.addColorStop(0,"rgba(221,205,151,.85)");g.addColorStop(1,"rgba(174,154,103,.70)");ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(p.x,p.y,38*s,11*s,0,0,Math.PI*2);ctx.fill()}
+  if(h.revealed||activeMember===2&&abilityActive>0){ctx.strokeStyle="rgba(235,91,77,.9)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,28*s+8,0,Math.PI*2);ctx.stroke()}
+}
+function drawDiscovery(d){
+  if(d.taken)return;const visible=d.revealed||activeMember===2&&abilityActive>0||activeMember===3&&abilityActive>0;if(!visible)return;const p=project(d.x,d.y);if(!p)return;const pulse=1+Math.sin(time*4+d.y)*.12,glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,28*p.scale+10);glow.addColorStop(0,"rgba(255,223,112,.35)");glow.addColorStop(1,"rgba(255,223,112,0)");ctx.fillStyle=glow;ctx.beginPath();ctx.arc(p.x,p.y,28*p.scale+10,0,Math.PI*2);ctx.fill();ctx.strokeStyle="rgba(241,207,104,.95)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,15*p.scale*pulse+6,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#efd16e";ctx.beginPath();ctx.arc(p.x,p.y,5*p.scale+2.5,0,Math.PI*2);ctx.fill()
+}
+function drawKeelboat(x,y,scale=1){
+  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle="rgba(0,0,0,.26)";ctx.beginPath();ctx.ellipse(0,30,58,15,0,0,Math.PI*2);ctx.fill();
+  const hull=ctx.createLinearGradient(-60,-12,60,24);hull.addColorStop(0,"#cc9456");hull.addColorStop(.45,"#98663a");hull.addColorStop(1,"#5e3d29");ctx.fillStyle=hull;ctx.beginPath();ctx.moveTo(-62,-8);ctx.quadraticCurveTo(-46,32,0,37);ctx.quadraticCurveTo(46,32,63,-8);ctx.lineTo(40,-20);ctx.lineTo(-40,-20);ctx.closePath();ctx.fill();ctx.strokeStyle="#e2b77c";ctx.lineWidth=2;ctx.stroke();
+  rr(-26,-40,52,25,7,"#d5b17e");rr(-19,-34,38,16,4,"#efe1c0");rr(-45,-15,15,18,3,"#745335");rr(31,-15,14,18,3,"#7a5838");
+  ctx.strokeStyle="#4d3828";ctx.lineWidth=3.2;ctx.beginPath();ctx.moveTo(4,-40);ctx.lineTo(4,-80);ctx.stroke();ctx.fillStyle="#d7b65d";ctx.beginPath();ctx.moveTo(6,-77);ctx.lineTo(36,-69);ctx.lineTo(6,-59);ctx.closePath();ctx.fill();
+  const crew=[MEMBERS[0].color,MEMBERS[1].color,MEMBERS[2].color,isMemberUnlocked(MEMBERS[3])?MEMBERS[3].color:"#7d6a55"];[-34,-12,12,34].forEach((cx,i)=>{ctx.fillStyle=crew[i];ctx.beginPath();ctx.arc(cx,-12,6.4,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c99b6c";ctx.beginPath();ctx.arc(cx,-20,4.3,0,Math.PI*2);ctx.fill()});
+  ctx.restore()
+}
+function drawPirogue(x,y,scale,color="#9a623b"){
+  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle="rgba(0,0,0,.16)";ctx.beginPath();ctx.ellipse(0,13,30,8,0,0,Math.PI*2);ctx.fill();const hg=ctx.createLinearGradient(-32,-6,32,12);hg.addColorStop(0,color);hg.addColorStop(1,"#70482f");ctx.fillStyle=hg;ctx.beginPath();ctx.moveTo(-33,-4);ctx.quadraticCurveTo(-22,15,0,17);ctx.quadraticCurveTo(22,15,33,-4);ctx.lineTo(19,-10);ctx.lineTo(-19,-10);ctx.closePath();ctx.fill();for(const cx of [-10,9]){ctx.fillStyle="#6e7c55";ctx.beginPath();ctx.arc(cx,-4,4.5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c69a6b";ctx.beginPath();ctx.arc(cx,-11,3.3,0,Math.PI*2);ctx.fill()}ctx.restore()
+}
+function drawCanoe(x,y,scale,color="#785335"){
+  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle="rgba(0,0,0,.13)";ctx.beginPath();ctx.ellipse(0,9,24,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(-28,-3);ctx.quadraticCurveTo(-16,10,0,11);ctx.quadraticCurveTo(16,10,28,-3);ctx.lineTo(15,-7);ctx.lineTo(-15,-7);ctx.closePath();ctx.fill();ctx.restore()
+}
+function wake(wx,wy,spread,alpha=1){for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(226,240,242,${(0.10-i*0.02)*alpha})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(wx-spread*.18,wy+8+i*7);ctx.quadraticCurveTo(wx,wy+18+i*7,wx+spread*.18,wy+8+i*7);ctx.stroke()}}
+function drawBoats(){
+  const x=boatScreenX();
+  if(act===1){
+    wake(x-88,BOAT_Y+26,82,.7);wake(x+91,BOAT_Y+31,78,.65);wake(x,BOAT_Y+36,120,1);
+    drawPirogue(x-88,BOAT_Y+20,.78,"#a4693f");drawPirogue(x+91,BOAT_Y+26,.74,"#9a623b");drawKeelboat(x,BOAT_Y,1)
+  }else{
+    // permanent party fleet after the keelboat returns downstream
+    wake(x-65,BOAT_Y+34,96,.9);wake(x+70,BOAT_Y+37,90,.85);
+    drawPirogue(x-65,BOAT_Y+22,.88,"#9e603a");drawPirogue(x+70,BOAT_Y+26,.84,"#8d5738");
+    const positions=[[-155,42],[-115,72],[-50,78],[35,80],[110,71],[157,43]];
+    positions.forEach((p,i)=>drawCanoe(x+p[0],BOAT_Y+p[1],.56+(i%2)*.04,i%2?"#725139":"#80583a"));
+  }
+}
+function drawForegroundFrame(){
+  const leftGrad=ctx.createLinearGradient(0,H-180,180,H-20);leftGrad.addColorStop(0,"rgba(34,58,37,0)");leftGrad.addColorStop(1,"rgba(28,49,31,.72)");ctx.fillStyle=leftGrad;ctx.beginPath();ctx.moveTo(0,H);ctx.lineTo(0,H-145);ctx.quadraticCurveTo(56,H-175,128,H-112);ctx.quadraticCurveTo(170,H-72,188,H);ctx.closePath();ctx.fill();
+  const rightGrad=ctx.createLinearGradient(W,H-180,W-180,H-20);rightGrad.addColorStop(0,"rgba(34,58,37,0)");rightGrad.addColorStop(1,"rgba(28,49,31,.72)");ctx.fillStyle=rightGrad;ctx.beginPath();ctx.moveTo(W,H);ctx.lineTo(W,H-145);ctx.quadraticCurveTo(W-56,H-175,W-128,H-112);ctx.quadraticCurveTo(W-170,H-72,W-188,H);ctx.closePath();ctx.fill()
+}
+function drawWeather(){
+  if(stormIntensity>0){ctx.fillStyle=`rgba(18,27,39,${.20*stormIntensity})`;ctx.fillRect(0,0,W,H);ctx.strokeStyle="rgba(220,236,241,.48)";ctx.lineWidth=1.5;rain.forEach(r=>{ctx.beginPath();ctx.moveTo(r.x,r.y);ctx.lineTo(r.x-r.len*.35,r.y+r.len);ctx.stroke()})}
+  if(boss?.type==="cold"){ctx.fillStyle="rgba(202,221,230,.10)";ctx.fillRect(0,HORIZON,W,H-HORIZON);for(let i=0;i<30;i++){const x=(i*97+time*28)%W,y=(i*67+time*18)%H;ctx.fillStyle="rgba(240,248,250,.5)";ctx.beginPath();ctx.arc(x,y,1.5,0,Math.PI*2);ctx.fill()}}
+  if(lightning>0){ctx.fillStyle=`rgba(255,255,255,${lightning*2.5})`;ctx.fillRect(0,0,W,H)}
+}
+function drawBossUI(){if(!boss)return;rr(W/2-250,24,500,48,14,"rgba(6,12,20,.80)");ctx.fillStyle="#fff";ctx.font="800 12px Inter, sans-serif";ctx.textAlign="center";ctx.fillText(`ENVIRONMENTAL BOSS — ${boss.name}`,W/2,43);rr(W/2-215,55,430,7,4,"rgba(255,255,255,.12)");rr(W/2-215,55,430*(boss.time/boss.max),7,4,"#d76c60")}
+function drawRiverHud(){rr(18,18,230,42,12,"rgba(7,14,23,.52)");ctx.fillStyle="#fff";ctx.font="800 11px Inter, sans-serif";ctx.textAlign="left";ctx.fillText(currentLandmark().name.toUpperCase(),32,37);ctx.fillStyle="#cad6de";ctx.font="500 9px Inter, sans-serif";ctx.fillText(currentLandmark().date,32,51)}
+
+/* ---------- PORTAGE GRAPHICS ---------- */
+function drawPortageSky(){
+  const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#81aabc");g.addColorStop(.36,"#c4d3cc");g.addColorStop(.37,"#aa9c6d");g.addColorStop(1,"#776747");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  const sg=ctx.createRadialGradient(1030,85,0,1030,85,90);sg.addColorStop(0,"rgba(255,239,181,.78)");sg.addColorStop(1,"rgba(255,239,181,0)");ctx.fillStyle=sg;ctx.beginPath();ctx.arc(1030,85,90,0,Math.PI*2);ctx.fill();
+  // distant falls / cliffs
+  ctx.fillStyle="rgba(102,91,71,.72)";ctx.beginPath();ctx.moveTo(0,210);for(let x=0;x<=W;x+=90)ctx.lineTo(x,175+Math.sin(x*.011)*28);ctx.lineTo(W,330);ctx.lineTo(0,330);ctx.closePath();ctx.fill();
+  ctx.fillStyle="rgba(224,231,225,.65)";ctx.fillRect(W*.56,180,45,75);ctx.fillStyle="rgba(126,183,201,.50)";ctx.fillRect(W*.565,180,34,82)
+}
+function drawPortageTrail(){
+  drawPortageSky();
+  // prairie ground
+  const grd=ctx.createLinearGradient(0,250,0,H);grd.addColorStop(0,"#a19366");grd.addColorStop(1,"#756342");ctx.fillStyle=grd;ctx.fillRect(0,250,W,H-250);
+  // broad trail
+  ctx.fillStyle="rgba(174,151,102,.72)";ctx.beginPath();ctx.moveTo(W/2-105,250);ctx.lineTo(W/2-360,H);ctx.lineTo(W/2+360,H);ctx.lineTo(W/2+105,250);ctx.closePath();ctx.fill();
+  ctx.strokeStyle="rgba(98,78,50,.22)";ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(W/2-36,250);ctx.lineTo(W/2-112,H);ctx.stroke();ctx.beginPath();ctx.moveTo(W/2+36,250);ctx.lineTo(W/2+112,H);ctx.stroke();
+  // prickly pear dots / grass
+  for(let i=0;i<65;i++){const x=(hash(i*9)*W),y=280+hash(i*13)*(H-280);if(Math.abs(x-W/2)<160+(y/H)*190)continue;ctx.strokeStyle="rgba(100,113,67,.58)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-5,y-12);ctx.stroke();ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+5,y-9);ctx.stroke()}
+}
+function drawPortageObstacle(o){
+  const scale=clamp((o.y-220)/(H-220),.15,1.1),x=W/2+o.x,y=o.y;
+  if(o.kind==="cactus"){ctx.fillStyle="#68804d";ctx.beginPath();ctx.ellipse(x,y,18*scale,8*scale,0,0,Math.PI*2);ctx.fill();for(let i=0;i<6;i++){ctx.strokeStyle="#8da06c";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+(i-3)*5*scale,y);ctx.lineTo(x+(i-3)*5*scale-3*scale,y-16*scale);ctx.stroke()}}
+  if(o.kind==="rock"){const g=ctx.createLinearGradient(x-20*scale,y-14*scale,x+20*scale,y+14*scale);g.addColorStop(0,"#a89b80");g.addColorStop(1,"#5e594c");ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,25*scale,16*scale,-.15,0,Math.PI*2);ctx.fill()}
+  if(o.kind==="rut"){ctx.strokeStyle="rgba(88,66,40,.65)";ctx.lineWidth=8*scale;ctx.beginPath();ctx.moveTo(x-22*scale,y-20*scale);ctx.lineTo(x-5*scale,y+22*scale);ctx.stroke();ctx.beginPath();ctx.moveTo(x+22*scale,y-20*scale);ctx.lineTo(x+5*scale,y+22*scale);ctx.stroke()}
+  if(o.kind==="snake"){ctx.strokeStyle="#493b2e";ctx.lineWidth=4*scale;ctx.beginPath();ctx.moveTo(x-20*scale,y);ctx.bezierCurveTo(x-8*scale,y-10*scale,x+5*scale,y+10*scale,x+20*scale,y);ctx.stroke()}
+  if(o.kind==="hail"){ctx.fillStyle="rgba(232,241,244,.85)";for(let i=0;i<8;i++){ctx.beginPath();ctx.arc(x+(i%4-1.5)*10*scale,y+(Math.floor(i/4)-.5)*12*scale,3.5*scale,0,Math.PI*2);ctx.fill()}}
+  if(o.revealed){ctx.strokeStyle="rgba(225,93,76,.85)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,34*scale+8,0,Math.PI*2);ctx.stroke()}
+}
+function drawPortageRig(){
+  const x=W/2+portage.x,y=H-118;
+  ctx.fillStyle="rgba(0,0,0,.22)";ctx.beginPath();ctx.ellipse(x,y+32,92,18,0,0,Math.PI*2);ctx.fill();
+  // wagon
+  ctx.fillStyle="#745234";rr(x-57,y-8,114,34,8,"#7b5938");ctx.fillStyle="#4a3728";ctx.beginPath();ctx.arc(x-38,y+29,15,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(x+38,y+29,15,0,Math.PI*2);ctx.fill();
+  // canoe on top
+  ctx.fillStyle="#9a693f";ctx.beginPath();ctx.moveTo(x-92,y-28);ctx.quadraticCurveTo(x-50,y-10,x,y-10);ctx.quadraticCurveTo(x+50,y-10,x+92,y-28);ctx.lineTo(x+72,y-37);ctx.lineTo(x-72,y-37);ctx.closePath();ctx.fill();
+  // crew hauling
+  const colors=[MEMBERS[0].color,MEMBERS[1].color,MEMBERS[2].color,MEMBERS[3].color,MEMBERS[4].color];
+  [-92,-67,70,95].forEach((dx,i)=>{ctx.strokeStyle="#3c352d";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x+dx,y+8);ctx.lineTo(x+dx-2,y+30);ctx.stroke();ctx.fillStyle=colors[i];ctx.beginPath();ctx.arc(x+dx,y,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c99b6c";ctx.beginPath();ctx.arc(x+dx,y-11,5,0,Math.PI*2);ctx.fill()});
+  // progress HUD
+  rr(W/2-205,22,410,52,14,"rgba(6,12,20,.78)");ctx.fillStyle="#fff";ctx.font="800 12px Inter";ctx.textAlign="center";ctx.fillText(`GREAT FALLS PORTAGE — STAGE ${portage.stage}/3`,W/2,42);rr(W/2-172,55,344,8,4,"rgba(255,255,255,.13)");rr(W/2-172,55,344*(portage.progress/100),8,4,"#d9b75f")
+}
+function drawPortage(){drawPortageTrail();portage.obstacles.forEach(drawPortageObstacle);drawPortageRig()}
+
+/* ---------- DRAW ---------- */
+function draw(){
+  if(mode==="portage"){drawPortage();return}
+  drawSky();drawRiver();drawBankLife();hazards.forEach(drawHazard);discoveries.forEach(drawDiscovery);drawBoats();drawForegroundFrame();
+  particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life/.6);ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1});
+  drawWeather();drawBossUI();drawRiverHud()
+}
+
+/* ---------- BUTTONS ---------- */
+ui.newBtn.addEventListener("click",startNew);
+ui.continueBtn.addEventListener("click",()=>{ensureAudio();if(!loadGame())startNew()});
+ui.restartBtn.addEventListener("click",()=>{ui.endOverlay.classList.add("hidden");ui.startOverlay.classList.remove("hidden");resetCampaign(true);running=false});
+ui.intermissionBtn.addEventListener("click",()=>{
+  if(ui.intermissionBtn.dataset.finish==="yes"){ui.intermissionOverlay.classList.add("hidden");campaignComplete();return}
+  beginActTwo()
+});
+ui.southChoice.addEventListener("click",()=>resolveDecision(true));ui.northChoice.addEventListener("click",()=>resolveDecision(false));
+ui.portageStartBtn.addEventListener("click",beginPortage);
+ui.abilityBtn.addEventListener("click",useAbility);ui.prevBtn.addEventListener("click",()=>switchRelative(-1));ui.nextBtn.addEventListener("click",()=>switchRelative(1));ui.pauseBtn.addEventListener("click",togglePause);ui.saveBtn.addEventListener("click",()=>saveGame(true));
+ui.sfxBtn.addEventListener("click",()=>{sfxOn=!sfxOn;if(sfxGain)sfxGain.gain.value=sfxOn?.36:0;ui.sfxBtn.textContent=`SFX: ${sfxOn?"On":"Off"}`});
+
+/* ---------- BOOT ---------- */
+function boot(){
+  try{ui.continueBtn.disabled=!localStorage.getItem(SAVE_KEY)}catch(e){ui.continueBtn.disabled=true}
+  resetCampaign(false);running=false;ui.startOverlay.classList.remove("hidden");ui.status.textContent="Choose New Expedition or Continue."
+  try{ui.continueBtn.disabled=!localStorage.getItem(SAVE_KEY)}catch(e){ui.continueBtn.disabled=true}
+}
+function frame(now){const dt=Math.min(.033,(now-last)/1000);last=now;gamepad();update(dt);draw();requestAnimationFrame(frame)}
+boot();requestAnimationFrame(frame);
+window.__CORPS_TEST__={startNew,beginActTwo,setupPortage,resolveDecision,saveGame,loadGame,getState:()=>({act,mode,progress,boat,portage,running})};
+})();
+</script>
+</body>
+</html>
