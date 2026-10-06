@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#111827">
+<title>Frontier 1846: Tactical Command — Boss Wave Edition</title>
+<style>
+:root{
+  --bg:#0a1020;
+  --panel:#1b2742;
+  --panel2:#2a3c63;
+  --panel3:#10192d;
+  --ink:#f7f3e7;
+  --muted:#c5d0e7;
+  --gold:#f7cf63;
+  --red:#d35a52;
+  --blue:#5f82d6;
+  --green:#3fa26f;
+  --black:#060910;
+  --accent:#5f82d6;
+}
+*{box-sizing:border-box}
+html,body{
+  margin:0;min-height:100%;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(95,130,214,.20), transparent 26%),
+    linear-gradient(180deg,#0d1323,#090d17 72%);
+  color:var(--ink);
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+.page{width:min(1320px,calc(100% - 18px));margin:0 auto;padding:14px 0 26px}
+.hero{
+  display:flex;justify-content:space-between;align-items:end;gap:18px;flex-wrap:wrap;
+  padding:6px 2px 13px
+}
+.kicker{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700}
+h1{
+  margin:6px 0 0;font-size:clamp(34px,7vw,78px);line-height:.88;letter-spacing:-2px;
+  text-shadow:0 3px 0 rgba(0,0,0,.45)
+}
+.sub{max-width:860px;font-size:13px;line-height:1.6;color:var(--muted);margin-top:9px}.heroFeatures{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.featurePill{padding:7px 12px;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.08);font-size:11px;font-weight:700;color:#eaf0fb;letter-spacing:.02em}
+.cart{
+  min-width:230px;text-align:left;padding:14px 16px;
+  background:linear-gradient(180deg,rgba(84,119,192,.28),rgba(31,43,70,.92));
+  border:1px solid rgba(255,255,255,.12);border-radius:18px;
+  box-shadow:0 16px 40px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.10);
+  backdrop-filter:blur(8px);
+  font-size:11px;line-height:1.45
+}
+.cart strong{display:block;font-size:22px;line-height:1;margin:4px 0 6px;color:#fff}
+.cart small{display:block;color:#d9e3f4}
+.shell{
+  border:1px solid rgba(255,255,255,.08);border-radius:24px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(26,39,66,.96),rgba(16,25,45,.98));
+  box-shadow:0 24px 60px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.06)
+}
+.topbar{
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:12px 14px;background:linear-gradient(180deg,#304773,#213353);
+  border-bottom:1px solid rgba(255,255,255,.08)
+}
+.brand{display:flex;align-items:center;gap:10px}
+.crest{
+  width:30px;height:30px;border-radius:8px;background:var(--accent);
+  box-shadow:inset 0 0 0 4px rgba(255,255,255,.15), 0 2px 8px rgba(0,0,0,.25)
+}
+.brand strong{display:block;font-size:15px}
+.brand small{display:block;font-size:11px;color:#d8e1f2;margin-top:2px}
+.stats{display:flex;gap:6px;flex-wrap:wrap}
+.stat{
+  min-width:78px;padding:6px 8px;text-align:center;border-radius:10px;
+  background:linear-gradient(180deg,#0f1729,#10192d);
+  border:2px solid #090d16;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06)
+}
+.stat span{display:block;font-size:9px;color:#9db0d2;letter-spacing:.08em}
+.stat b{display:block;font-size:14px;margin-top:2px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 348px}
+.boardArea{padding:10px;border-right:3px solid #0a0d14}
+.boardWrap{
+  position:relative;max-width:920px;margin:0 auto;border-radius:14px;
+  background:#0d1424;border:3px solid #070a12;padding:6px;overflow:hidden
+}
+canvas{
+  display:block;width:100%;height:auto;aspect-ratio:16/10;background:#6e9158;
+  border-radius:8px;cursor:default
+}
+.overlay{
+  position:absolute;inset:6px;display:grid;place-items:center;z-index:12;
+  background:rgba(7,10,18,.82);backdrop-filter:blur(2px)
+}
+.overlay.hidden{display:none}
+.overlayCard{
+  width:min(640px,92%);padding:18px;border-radius:16px;
+  background:linear-gradient(180deg,#324971,#203251);
+  border:3px solid #090d16;
+  box-shadow:0 18px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.10);
+  text-align:center
+}
+.label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:700}
+.bigTitle{font-size:clamp(28px,5vw,54px);line-height:.92;margin:7px 0 10px}
+.overlayCard p{font-size:13px;line-height:1.55;color:#dce5f3}
+.factions{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.factionBtn{
+  min-height:132px;border:3px solid #0a0d14;border-radius:14px;padding:12px;
+  background:linear-gradient(180deg,#172338,#101829);color:#fff;text-align:left;
+  box-shadow:0 10px 18px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06)
+}
+.factionBtn:hover{transform:translateY(-1px)}
+.factionBtn strong{display:block;font-size:18px;margin:8px 0 6px}
+.factionBtn small{display:block;font-size:11px;line-height:1.45;color:#c8d2e6}
+.flag{
+  width:76px;height:46px;border-radius:8px;border:2px solid rgba(0,0,0,.45);overflow:hidden
+}
+.flag.mex{display:grid;grid-template-columns:repeat(3,1fr)}
+.flag.mex span:nth-child(1){background:#268355}.flag.mex span:nth-child(2){background:#efe8d5}.flag.mex span:nth-child(3){background:#ba403e}
+.flag.usa{
+  background:
+    repeating-linear-gradient(180deg,#cf5a53 0 16%,#efe8d5 16% 32%);
+  position:relative
+}
+.flag.usa:before{content:"";position:absolute;left:0;top:0;width:32px;height:27px;background:#355eaa}
+.missionCard{
+  text-align:left;border-radius:12px;padding:12px;
+  background:rgba(12,19,33,.35);border:1px solid rgba(255,255,255,.08);margin:10px 0 14px
+}
+.missionCard b{display:block;font-size:17px;margin-bottom:4px}
+.missionCard span{display:block;font-size:12px;color:#d9e0ef;line-height:1.45}
+.boardNote{
+  display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;
+  color:#d5deec;font-size:11px;margin-top:8px
+}
+.controls{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+button{
+  min-height:40px;padding:0 13px;border-radius:11px;border:2px solid #090d16;
+  background:linear-gradient(180deg,#485671,#313d54);color:#fff;font:700 11px/1 Verdana,sans-serif;
+  cursor:pointer;box-shadow:0 6px 12px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.08)
+}
+button:hover{filter:brightness(1.06)}
+button:disabled{opacity:.45;cursor:not-allowed}
+.primary{background:linear-gradient(180deg,#c8524c,#963732)!important}
+.blue{background:linear-gradient(180deg,#4f79cb,#33589d)!important}
+.gold{background:linear-gradient(180deg,#efcb67,#c1972d)!important;color:#121824!important}
+.green{background:linear-gradient(180deg,#47a774,#2d7f55)!important}
+.sidebar{padding:10px;background:#121b2d}
+.panel{
+  border-radius:14px;border:2px solid #090d16;margin-bottom:10px;padding:10px;
+  background:linear-gradient(180deg,#253753,#1b2941)
+}
+.panel h2{font-size:13px;margin:0 0 9px;color:var(--gold)}
+.commander{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center}
+.portrait{
+  width:68px;height:68px;border-radius:12px;border:2px solid #090d16;overflow:hidden;
+  background:linear-gradient(180deg,#172338,#0e1524);position:relative
+}
+.portrait:before{content:"";position:absolute;left:19px;top:14px;width:30px;height:30px;background:#cba06b;border-radius:10px 10px 12px 12px}
+.portrait:after{content:"";position:absolute;left:12px;bottom:0;width:44px;height:26px;background:var(--accent);border-radius:10px 10px 0 0}
+.towers{display:grid;gap:7px}
+.tower{
+  width:100%;display:grid;grid-template-columns:48px 1fr auto;gap:8px;align-items:center;text-align:left;
+  padding:8px;border-radius:12px;border:2px solid #090d16;background:linear-gradient(180deg,#131c2f,#0f1728);color:#fff
+}
+.tower.selected{outline:3px solid var(--gold)}
+.tower .icon{
+  width:40px;height:40px;border-radius:10px;border:2px solid #090d16;
+  display:grid;place-items:center;background:#50617f;font-weight:700
+}
+.tower strong{display:block;font-size:12px}.tower small{display:block;color:#aebdd8;font-size:10px;line-height:1.35;margin-top:2px}.cost{font-size:10px;color:var(--gold)}
+.info{font-size:11px;line-height:1.45;color:#e0e7f2}
+.row{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.14);font-size:11px}
+.waveFlash{
+  position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);pointer-events:none;z-index:9;
+  font-size:clamp(24px,5vw,48px);font-weight:900;color:#fff;text-shadow:0 3px 0 rgba(0,0,0,.6);
+  opacity:0
+}
+.waveFlash.show{animation:waveflash 1s ease}
+@keyframes waveflash{
+  0%{opacity:0;transform:translate(-50%,-50%) scale(.7)}
+  20%{opacity:1}
+  70%{opacity:1}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(1.04)}
+}
+.footer{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:#a5b2c8;font-size:10px;padding:10px 2px 0}
+@media(max-width:920px){
+  .main{grid-template-columns:1fr}
+  .boardArea{border-right:0;border-bottom:3px solid #0a0d14}
+  .sidebar{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .panel{margin:0}
+}
+@media(max-width:670px){
+  .page{width:min(100% - 10px,1320px);padding-top:8px}
+  .sidebar{display:block}
+  .panel{margin-bottom:8px}
+  .factions{grid-template-columns:1fr}
+  .cart{display:none}
+}
+
+/* Modern tactical visual refresh */
+body{
+  background:
+    radial-gradient(circle at 12% 0%, rgba(67,111,180,.20), transparent 30%),
+    radial-gradient(circle at 88% 10%, rgba(185,75,70,.10), transparent 24%),
+    linear-gradient(180deg,#0a1020 0%,#0b1220 45%,#070b12 100%);
+}
+.hero{padding-top:12px}
+.kicker{font-size:.72rem;letter-spacing:.16em;color:#8fb7ff}
+h1{
+  font-weight:800;letter-spacing:-.04em;
+  background:linear-gradient(90deg,#fff,#dce7fa 55%,#a9c8f4);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:none
+}
+.featurePill{
+  background:rgba(255,255,255,.055);
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:none;
+  color:#dfe8f7;
+}
+.cart{
+  background:linear-gradient(180deg,rgba(34,49,77,.88),rgba(19,28,45,.96));
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 18px 50px rgba(0,0,0,.30);
+}
+.shell{
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,rgba(23,34,55,.96),rgba(12,20,34,.98));
+}
+.topbar{
+  background:linear-gradient(180deg,rgba(39,58,91,.96),rgba(27,42,68,.96));
+}
+.stat{
+  background:rgba(5,10,20,.42);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:none;
+}
+.boardWrap{
+  border:1px solid rgba(255,255,255,.08);
+  background:#0b111d;
+  box-shadow:0 18px 45px rgba(0,0,0,.28);
+}
+canvas{
+  border-radius:14px;
+  image-rendering:auto;
+}
+.panel{
+  background:linear-gradient(180deg,rgba(33,49,76,.96),rgba(21,32,51,.98));
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 8px 20px rgba(0,0,0,.16);
+}
+.tower{
+  background:linear-gradient(180deg,rgba(15,25,42,.96),rgba(10,18,31,.98));
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:none;
+}
+.tower .icon{
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,#566b8e,#364966);
+}
+button{
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:0 5px 14px rgba(0,0,0,.20);
+}
+.overlay{
+  background:rgba(4,8,15,.78);
+  backdrop-filter:blur(8px)
+}
+.overlayCard{
+  background:linear-gradient(180deg,rgba(45,65,101,.98),rgba(27,42,68,.99));
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 24px 70px rgba(0,0,0,.38)
+}
+
+</style>
+</head>
+<body>
+<main class="page">
+  <section class="hero">
+    <div>
+      <div class="kicker">Shadow Dog Studios // Tactical History Showcase</div>
+      <h1>Frontier 1846: Tactical Command</h1>
+      <div class="sub">A modernized combat-defense game set during the Mexican-American War. Choose Mexico or the United States, fight through a six-battle campaign, survive counterfire, repair your line, and defeat periodic boss-class enemy units that force major tactical decisions.</div>
+      <div class="heroFeatures">
+        <span class="featurePill">Boss Waves</span>
+        <span class="featurePill">Enemy Counterfire</span>
+        <span class="featurePill">Repair & Upgrade Economy</span>
+        <span class="featurePill">Modern Tactical Combat</span>
+        <span class="featurePill">6-Mission Campaign</span>
+      </div>
+    </div>
+    <div class="cart"><div style="font-size:11px;color:#f7cf63;font-weight:700;letter-spacing:.08em">MODERN COMBAT EDITION</div><strong>BOSS WAVES</strong><small>Counterfire • Repairs • Mission Briefings • Smooth Vector-Style Combat</small></div>
+  </section>
+
+  <section class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="crest"></div>
+        <div><strong id="brandName">Choose Your Side</strong><small id="brandSub">Campaign not started</small></div>
+      </div>
+      <div class="stats">
+        <div class="stat"><span>Mission</span><b id="missionStat">—</b></div>
+        <div class="stat"><span>Wave</span><b id="waveStat">0</b></div>
+        <div class="stat"><span>Gold</span><b id="goldStat">180</b></div>
+        <div class="stat"><span>Lives</span><b id="livesStat">20</b></div>
+        <div class="stat"><span>Kills</span><b id="killsStat">0</b></div>
+      </div>
+    </div>
+
+    <div class="main">
+      <section class="boardArea">
+        <div class="boardWrap">
+          <canvas id="game" width="896" height="560" aria-label="Frontier 1846 Campaign tower defense"></canvas>
+          <div class="waveFlash" id="waveFlash">Wave 1</div>
+
+          <div class="overlay" id="factionOverlay">
+            <div class="overlayCard">
+              <div class="label">Campaign Select</div>
+              <div class="bigTitle">Choose Your Side</div>
+              <p>Play as either Mexico or the United States. Each side has its own commander, defensive roster, enemy roster, and now must also contend with recurring boss-class assaults.</p>
+              <div class="factions">
+                <button class="factionBtn" id="mexBtn" type="button">
+                  <div class="flag mex"><span></span><span></span><span></span></div>
+                  <strong>Mexico</strong>
+                  <small>Line Infantry • Lancers • Field Artillery • Adobe Redoubts</small>
+                </button>
+                <button class="factionBtn" id="usaBtn" type="button">
+                  <div class="flag usa"></div>
+                  <strong>United States</strong>
+                  <small>Volunteers • Rifle Companies • Flying Artillery • Field Works</small>
+                </button>
+              </div>
+              <div style="font-size:10px;color:#b8c5db">Original modern tactical art and interface.</div>
+            </div>
+          </div>
+
+          <div class="overlay hidden" id="missionOverlay">
+            <div class="overlayCard">
+              <div class="label">Mission Briefing</div>
+              <div class="bigTitle" id="missionTitle">Mission</div>
+              <div class="missionCard">
+                <b id="missionName">Battle Name</b>
+                <span id="missionDesc">Mission description.</span>
+              </div>
+              <p id="missionObjective">Hold the route and survive the required waves.</p>
+              <button class="green" id="startMissionBtn" type="button">Begin Mission</button>
+            </div>
+          </div>
+
+          <div class="overlay hidden" id="missionCompleteOverlay">
+            <div class="overlayCard">
+              <div class="label">Mission Complete</div>
+              <div class="bigTitle" id="completeTitle">Victory</div>
+              <p id="completeText">You held the line.</p>
+              <button class="green" id="nextMissionBtn" type="button">Next Mission</button>
+            </div>
+          </div>
+
+          <div class="overlay hidden" id="endOverlay">
+            <div class="overlayCard">
+              <div class="label">Campaign Report</div>
+              <div class="bigTitle" id="endTitle">Defeat</div>
+              <p id="endText"></p>
+              <button class="primary" id="restartBtn" type="button">Return to Campaign Select</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="boardNote">
+          <span id="status">Choose Mexico or the United States to begin.</span>
+          <span>Select a unit, move over the battlefield, then deploy on a green placement marker</span>
+        </div>
+
+        <div class="controls">
+          <button class="primary" id="waveBtn" type="button" disabled>Start Wave 1</button>
+          <button class="blue" id="speedBtn" type="button">Speed 1×</button>
+          <button id="pauseBtn" type="button">Pause</button>
+          <button class="gold" id="cancelBtn" type="button">Cancel</button>
+          <button id="sfxBtn" type="button" aria-pressed="true">SFX: On</button>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="panel">
+          <h2>Commander</h2>
+          <div class="commander">
+            <div class="portrait"></div>
+            <div class="info"><b id="commanderName">No Command</b><br><span id="commanderText">Select a faction to begin the campaign.</span></div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Defense Units</h2>
+          <div class="towers" id="towerList"></div>
+        </section>
+
+        <section class="panel">
+          <h2>Selected Position</h2>
+          <div class="info" id="selectedInfo">Select a defense. A live placement preview will appear over the battlefield.</div>
+          <div class="controls">
+            <button class="blue" id="upgradeBtn" type="button" disabled>Upgrade</button>
+            <button class="green" id="repairBtn" type="button" disabled>Repair</button>
+            <button id="sellBtn" type="button" disabled>Sell</button>
+          </div>
+        </section>
+
+        <section class="panel">
+          <h2>Intelligence</h2>
+          <div class="row"><span>Next Enemy</span><b id="enemyType">—</b></div>
+          <div class="row"><span>Strength</span><b id="enemyCount">—</b></div>
+          <div class="row"><span>Wave Bonus</span><b id="waveBonus">—</b></div>
+          <div class="row"><span>Boss Alert</span><b id="bossType">None</b></div>
+          <div class="info" id="waveNote" style="margin-top:7px">Choose a faction to receive your first field report.</div>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <span>Combat Edition: opposing troops return fire • destructible defenses • repair system • 2.5D pixel-art units.</span>
+    <span>Balanced Edition: more starting gold + gentler opening waves • GitHub Pages ready</span>
+  </footer>
+</main>
+
+<script>
+(() => {
+"use strict";
+
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = true;
+
+const $ = id => document.getElementById(id);
+const ui = {
+  missionStat: $("missionStat"), waveStat: $("waveStat"), goldStat: $("goldStat"), livesStat: $("livesStat"), killsStat: $("killsStat"),
+  brandName: $("brandName"), brandSub: $("brandSub"), status: $("status"), towerList: $("towerList"),
+  selectedInfo: $("selectedInfo"), upgradeBtn: $("upgradeBtn"), repairBtn: $("repairBtn"), sellBtn: $("sellBtn"),
+  waveBtn: $("waveBtn"), speedBtn: $("speedBtn"), pauseBtn: $("pauseBtn"), cancelBtn: $("cancelBtn"),
+  factionOverlay: $("factionOverlay"), missionOverlay: $("missionOverlay"), missionCompleteOverlay: $("missionCompleteOverlay"), endOverlay: $("endOverlay"),
+  endTitle: $("endTitle"), endText: $("endText"), restartBtn: $("restartBtn"),
+  mexBtn: $("mexBtn"), usaBtn: $("usaBtn"),
+  commanderName: $("commanderName"), commanderText: $("commanderText"),
+  enemyType: $("enemyType"), enemyCount: $("enemyCount"), waveBonus: $("waveBonus"), bossType: $("bossType"), waveNote: $("waveNote"),
+  missionTitle: $("missionTitle"), missionName: $("missionName"), missionDesc: $("missionDesc"), missionObjective: $("missionObjective"), startMissionBtn: $("startMissionBtn"),
+  completeTitle: $("completeTitle"), completeText: $("completeText"), nextMissionBtn: $("nextMissionBtn"),
+  waveFlash: $("waveFlash"), sfxBtn: $("sfxBtn")
+};
+
+const W = canvas.width, H = canvas.height;
+
+const FACTIONS = {
+  mexico: {
+    name: "Mexico",
+    accent: "#3fa26f",
+    sub: "Mexican defensive command",
+    commander: "General Santa Anna",
+    commanderText: "Use concentrated artillery, lancers, and fortified positions to hold the route.",
+    towerSet: {
+      infantry: {name:"Line Infantry", icon:"M", cost:55, range:92, rate:.70, damage:10, color:"#3fa26f", desc:"Steady musket fire."},
+      lancer: {name:"Lancer Post", icon:"L", cost:88, range:118, rate:1.06, damage:20, color:"#b84b4b", desc:"Fast-response cavalry fire."},
+      cannon: {name:"Field Artillery", icon:"C", cost:128, range:128, rate:1.64, damage:37, color:"#7d838f", splash:40, desc:"Heavy area damage."},
+      fort: {name:"Adobe Redoubt", icon:"F", cost:82, range:76, rate:.92, damage:13, color:"#a87843", slow:.70, desc:"Slows enemy columns."}
+    },
+    enemies: [
+      {name:"U.S. Volunteers", hp:50, speed:40, reward:10, color:"#5f82d6", kind:"infantry"},
+      {name:"U.S. Regulars", hp:86, speed:36, reward:14, color:"#4066af", kind:"infantry"},
+      {name:"Dragoons", hp:66, speed:58, reward:13, color:"#334f88", kind:"cavalry"},
+      {name:"Veteran Column", hp:136, speed:32, reward:19, color:"#2a446f", kind:"infantry"}
+    ]
+  },
+  usa: {
+    name: "United States",
+    accent: "#5f82d6",
+    sub: "United States field command",
+    commander: "General Zachary Taylor",
+    commanderText: "Build overlapping fire lines. Use rifles for reach and flying artillery to break dense waves.",
+    towerSet: {
+      volunteers: {name:"Volunteer Post", icon:"V", cost:55, range:92, rate:.69, damage:10, color:"#5f82d6", desc:"Low-cost musket fire."},
+      rifle: {name:"Rifle Company", icon:"R", cost:92, range:150, rate:1.13, damage:22, color:"#3f8a63", desc:"Long-range precision fire."},
+      cannon: {name:"Flying Artillery", icon:"A", cost:134, range:130, rate:1.56, damage:36, color:"#7d838f", splash:38, desc:"Mobile heavy firepower."},
+      works: {name:"Field Works", icon:"W", cost:82, range:76, rate:.92, damage:13, color:"#9b7348", slow:.71, desc:"Slows enemy advances."}
+    },
+    enemies: [
+      {name:"Mexican Infantry", hp:50, speed:40, reward:10, color:"#3fa26f", kind:"infantry"},
+      {name:"Mexican Veterans", hp:86, speed:36, reward:14, color:"#2f8a5a", kind:"infantry"},
+      {name:"Lancers", hp:64, speed:59, reward:13, color:"#b44747", kind:"cavalry"},
+      {name:"Guard Column", hp:138, speed:31, reward:19, color:"#2a714b", kind:"infantry"}
+    ]
+  }
+};
+
+const MISSIONS = [
+  {
+    title:"Mission 1",
+    name:"Palo Alto",
+    desc:"Open prairie and artillery duels. The road runs through grassland with sparse cover.",
+    objective:"Hold the route through 4 waves.",
+    waves:4, startGold:260, lives:20, theme:"plains",
+    path:[{x:-30,y:115},{x:160,y:115},{x:230,y:190},{x:230,y:305},{x:375,y:375},{x:525,y:375},{x:595,y:300},{x:595,y:180},{x:730,y:140},{x:926,y:140}]
+  },
+  {
+    title:"Mission 2",
+    name:"Resaca de la Palma",
+    desc:"Brush, wooded pockets, and a tighter route create strong choke points.",
+    objective:"Hold the route through 4 waves.",
+    waves:4, startGold:280, lives:20, theme:"brush",
+    path:[{x:-30,y:145},{x:110,y:145},{x:175,y:225},{x:175,y:350},{x:295,y:410},{x:480,y:410},{x:550,y:330},{x:550,y:190},{x:690,y:160},{x:926,y:160}]
+  },
+  {
+    title:"Mission 3",
+    name:"Monterrey",
+    desc:"Street fighting and denser terrain. The approach winds between outlying structures.",
+    objective:"Hold the route through 5 waves.",
+    waves:5, startGold:300, lives:20, theme:"town",
+    path:[{x:-30,y:125},{x:135,y:125},{x:205,y:170},{x:205,y:295},{x:315,y:335},{x:460,y:335},{x:520,y:255},{x:520,y:150},{x:670,y:115},{x:926,y:115}]
+  },
+  {
+    title:"Mission 4",
+    name:"Buena Vista",
+    desc:"Rocky highlands and dry washes create a more rugged defensive field.",
+    objective:"Hold the route through 5 waves.",
+    waves:5, startGold:320, lives:20, theme:"desert",
+    path:[{x:-30,y:165},{x:130,y:165},{x:210,y:210},{x:210,y:320},{x:355,y:385},{x:540,y:385},{x:615,y:305},{x:615,y:205},{x:760,y:155},{x:926,y:155}]
+  },
+  {
+    title:"Mission 5",
+    name:"Veracruz",
+    desc:"A coastal approach brings enemy waves inland past water and fortifications.",
+    objective:"Hold the route through 5 waves.",
+    waves:5, startGold:340, lives:20, theme:"coast",
+    path:[{x:-30,y:120},{x:125,y:120},{x:185,y:210},{x:185,y:335},{x:340,y:395},{x:515,y:395},{x:580,y:305},{x:580,y:200},{x:730,y:150},{x:926,y:150}]
+  },
+  {
+    title:"Mission 6",
+    name:"Chapultepec",
+    desc:"The final approach climbs toward fortified heights. Expect the heaviest resistance.",
+    objective:"Hold the route through 6 waves.",
+    waves:6, startGold:370, lives:20, theme:"fortress",
+    path:[{x:-30,y:185},{x:140,y:185},{x:210,y:245},{x:210,y:360},{x:360,y:425},{x:565,y:425},{x:640,y:325},{x:640,y:215},{x:790,y:170},{x:926,y:170}]
+  }
+];
+
+let factionKey = null;
+let faction = null;
+let towersConfig = {};
+let enemyRoster = [];
+let currentMissionIndex = 0;
+let currentMission = null;
+let missionStarted = false;
+
+let gold = 180, lives = 20, kills = 0, wave = 0;
+let towers = [], enemies = [], shots = [], particles = [], smoke = [];
+let selectedType = null, selectedTower = null;
+let placementHover = {x:W/2,y:H/2,inside:false};
+let spawning = false, spawnRemaining = 0, spawnTimer = 0;
+let bossPending = false, bossSpawnedThisWave = false;
+let speed = 1, paused = false, gameEnded = false;
+let last = performance.now();
+
+let audioCtx = null;
+let masterGain = null;
+let sfxGain = null;
+let sfxOn = true;
+let lastWeaponSound = 0;
+
+function ensureAudio(){
+  if(audioCtx) {
+    if(audioCtx.state === "suspended") audioCtx.resume().catch(()=>{});
+    return;
+  }
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if(!AudioContextClass) return;
+  try { audioCtx = new AudioContextClass(); } catch(e) { return; }
+
+  masterGain = audioCtx.createGain();
+  sfxGain = audioCtx.createGain();
+
+  masterGain.gain.value = 0.56;
+  sfxGain.gain.value = sfxOn ? 0.54 : 0;
+
+  sfxGain.connect(masterGain);
+  masterGain.connect(audioCtx.destination);
+}
+
+function noteFreq(note){
+  const notes={C3:130.81,D3:146.83,E3:164.81,F3:174.61,G3:196.00,A3:220.00,B3:246.94,C4:261.63,D4:293.66,E4:329.63,F4:349.23,G4:392.00,A4:440.00,B4:493.88,C5:523.25};
+  return notes[note] || 220;
+}
+
+function tone(freq,start,duration,type="square",gain=.05,destination=sfxGain){
+  if(!audioCtx || !destination) return;
+  const osc=audioCtx.createOscillator();
+  const g=audioCtx.createGain();
+  osc.type=type;
+  osc.frequency.setValueAtTime(freq,start);
+  g.gain.setValueAtTime(.0001,start);
+  g.gain.exponentialRampToValueAtTime(Math.max(.0002,gain),start+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,start+duration);
+  osc.connect(g);g.connect(destination);osc.start(start);osc.stop(start+duration+.02);
+}
+
+function noiseBurst(duration=.06,gain=.06){
+  if(!audioCtx || !sfxGain) return;
+  const length=Math.max(1,Math.floor(audioCtx.sampleRate*duration));
+  const buffer=audioCtx.createBuffer(1,length,audioCtx.sampleRate);
+  const data=buffer.getChannelData(0);
+  for(let i=0;i<length;i++) data[i]=(Math.random()*2-1)*(1-i/length);
+  const src=audioCtx.createBufferSource();
+  const g=audioCtx.createGain();
+  src.buffer=buffer;g.gain.value=gain;src.connect(g);g.connect(sfxGain);src.start();
+}
+
+function sfx(kind){
+  if(!sfxOn) return;
+  if(kind==="musket" || kind==="cannon"){
+    const nowMs = performance.now();
+    if(nowMs-lastWeaponSound < 85) return;
+    lastWeaponSound = nowMs;
+  }
+  ensureAudio();
+  if(!audioCtx) return;
+  const now = audioCtx.currentTime;
+  if(kind==="build"){
+    tone(noteFreq("C4"),now,.07,"square",.055,sfxGain);
+    tone(noteFreq("G4"),now+.06,.09,"square",.045,sfxGain);
+  }else if(kind==="upgrade"){
+    tone(noteFreq("C4"),now,.07,"square",.05,sfxGain);
+    tone(noteFreq("E4"),now+.06,.07,"square",.05,sfxGain);
+    tone(noteFreq("G4"),now+.12,.12,"square",.055,sfxGain);
+  }else if(kind==="sell"){
+    tone(noteFreq("G4"),now,.06,"triangle",.04,sfxGain);
+    tone(noteFreq("C4"),now+.07,.10,"triangle",.035,sfxGain);
+  }else if(kind==="musket"){
+    noiseBurst(.045,.055);
+    tone(110,now,.045,"square",.025,sfxGain);
+  }else if(kind==="cannon"){
+    noiseBurst(.12,.12);
+    tone(70,now,.18,"sawtooth",.07,sfxGain);
+    tone(45,now+.02,.20,"triangle",.05,sfxGain);
+  }else if(kind==="hit"){
+    tone(180,now,.035,"square",.025,sfxGain);
+  }else if(kind==="wave"){
+    tone(noteFreq("C4"),now,.10,"square",.05,sfxGain);
+    tone(noteFreq("G4"),now+.11,.12,"square",.05,sfxGain);
+    tone(noteFreq("C5"),now+.24,.18,"square",.055,sfxGain);
+  }else if(kind==="complete"){
+    ["C4","E4","G4","C5"].forEach((n,i)=>tone(noteFreq(n),now+i*.10,.18,"square",.05,sfxGain));
+  }else if(kind==="defeat"){
+    ["G4","E4","C4","A3"].forEach((n,i)=>tone(noteFreq(n),now+i*.13,.20,"triangle",.045,sfxGain));
+  }
+}
+
+
+
+
+
+function setSfx(enabled){
+  sfxOn = enabled;
+  ensureAudio();
+  if(sfxGain) sfxGain.gain.value = enabled ? 0.50 : 0;
+  if(ui.sfxBtn){
+    ui.sfxBtn.textContent = `SFX: ${enabled ? "On" : "Off"}`;
+    ui.sfxBtn.setAttribute("aria-pressed", String(enabled));
+  }
+}
+
+if(ui.sfxBtn) ui.sfxBtn.addEventListener("click",()=>setSfx(!sfxOn));
+
+
+
+function setAccent(color){
+  document.documentElement.style.setProperty("--accent", color);
+}
+function show(el){el.classList.remove("hidden")}
+function hide(el){el.classList.add("hidden")}
+
+function chooseFaction(key){
+  ensureAudio();
+  factionKey = key;
+  faction = FACTIONS[key];
+  towersConfig = faction.towerSet;
+  enemyRoster = faction.enemies;
+  ui.brandName.textContent = faction.name;
+  ui.brandSub.textContent = faction.sub;
+  ui.commanderName.textContent = faction.commander;
+  ui.commanderText.textContent = faction.commanderText;
+  setAccent(faction.accent);
+  hide(ui.factionOverlay);
+  currentMissionIndex = 0;
+  buildTowerList();
+  prepareMission(currentMissionIndex);
+}
+
+ui.mexBtn.addEventListener("click",()=>chooseFaction("mexico"));
+ui.usaBtn.addEventListener("click",()=>chooseFaction("usa"));
+
+function prepareMission(index){
+  currentMission = MISSIONS[index];
+  resetCore();
+  gold = currentMission.startGold;
+  lives = currentMission.lives;
+  currentMission.path.forEach((p,i)=>{}); // keep for clarity
+  updateHUD();
+  ui.missionStat.textContent = `${index+1}/${MISSIONS.length}`;
+  ui.missionTitle.textContent = currentMission.title;
+  ui.missionName.textContent = currentMission.name;
+  ui.missionDesc.textContent = currentMission.desc;
+  ui.missionObjective.textContent = currentMission.objective;
+  ui.status.textContent = `${currentMission.name} briefing ready.`;
+  show(ui.missionOverlay);
+  updateIntel();
+}
+
+ui.startMissionBtn.addEventListener("click",()=>{
+  hide(ui.missionOverlay);
+  missionStarted = true;
+  ui.status.textContent = `${currentMission.name} has begun. Build defenses, then launch Wave 1.`;
+  ui.waveBtn.disabled = false;
+});
+
+ui.nextMissionBtn.addEventListener("click",()=>{
+  hide(ui.missionCompleteOverlay);
+  currentMissionIndex++;
+  if(currentMissionIndex >= MISSIONS.length){
+    showCampaignVictory();
+  } else {
+    prepareMission(currentMissionIndex);
+  }
+});
+
+function buildTowerList(){
+  ui.towerList.innerHTML = "";
+  Object.entries(towersConfig).forEach(([key,t])=>{
+    const b = document.createElement("button");
+    b.className = "tower";
+    b.type = "button";
+    b.innerHTML = `<span class="icon">${t.icon}</span><span><strong>${t.name}</strong><small>${t.desc}</small></span><span class="cost">${t.cost}g</span>`;
+    b.addEventListener("click",()=>{
+      selectedType = key;
+      selectedTower = null;
+      document.querySelectorAll(".tower").forEach(x=>x.classList.toggle("selected", x===b));
+      updateSelected();
+      ui.status.textContent = `${t.name} selected.`;
+    });
+    ui.towerList.appendChild(b);
+  });
+}
+
+function mousePos(e){
+  const r = canvas.getBoundingClientRect();
+  return {x:(e.clientX-r.left)*W/r.width, y:(e.clientY-r.top)*H/r.height};
+}
+function pointSeg(px,py,a,b){
+  const vx=b.x-a.x, vy=b.y-a.y, wx=px-a.x, wy=py-a.y;
+  const c1=vx*wx+vy*wy;
+  if(c1<=0) return Math.hypot(px-a.x,py-a.y);
+  const c2=vx*vx+vy*vy;
+  if(c2<=c1) return Math.hypot(px-b.x,py-b.y);
+  const t=c1/c2;
+  return Math.hypot(px-(a.x+t*vx), py-(a.y+t*vy));
+}
+function onRoad(x,y,b=36){
+  const path = currentMission?.path || [];
+  for(let i=0;i<path.length-1;i++) if(pointSeg(x,y,path[i],path[i+1])<b) return true;
+  return false;
+}
+function nearTower(x,y,b=48){
+  return towers.some(t=>Math.hypot(t.x-x,t.y-y)<b);
+}
+function towerAt(x,y){
+  for(let i=towers.length-1;i>=0;i--) if(Math.hypot(towers[i].x-x, towers[i].y-y)<30) return towers[i];
+  return null;
+}
+
+function placementState(x,y){
+  if(!selectedType) return {valid:false,reason:"Select a unit first."};
+  const cfg=towersConfig[selectedType];
+  if(!cfg) return {valid:false,reason:"Unit unavailable."};
+  if(gold<cfg.cost) return {valid:false,reason:"Not enough gold."};
+  if(onRoad(x,y)) return {valid:false,reason:"Road blocked."};
+  if(nearTower(x,y,54)) return {valid:false,reason:"Too close to another defense."};
+  if(x<38||y<42||x>W-38||y>H-38) return {valid:false,reason:"Too close to the edge."};
+  return {valid:true,reason:"Valid position"};
+}
+
+canvas.addEventListener("pointermove",e=>{
+  const p=mousePos(e);
+  placementHover.x=p.x; placementHover.y=p.y; placementHover.inside=true;
+});
+canvas.addEventListener("pointerleave",()=>{ placementHover.inside=false; });
+
+canvas.addEventListener("click",e=>{
+  if(!faction || !missionStarted || gameEnded) return;
+  const p = mousePos(e);
+  const hit = towerAt(p.x,p.y);
+  if(hit){
+    selectedTower = hit;
+    selectedType = null;
+    document.querySelectorAll(".tower").forEach(x=>x.classList.remove("selected"));
+    updateSelected();
+    return;
+  }
+  if(selectedType) placeTower(p.x,p.y);
+});
+
+
+function towerMaxHp(type){
+  if(type==="cannon") return 185;
+  if(type==="fort" || type==="works") return 250;
+  if(type==="lancer" || type==="rifle") return 145;
+  return 160;
+}
+function repairCost(t){
+  const cfg = towersConfig[t.type];
+  const missing = Math.max(0,t.maxHp-t.hp);
+  if(missing<=0) return 0;
+  return Math.max(8,Math.ceil((missing/t.maxHp)*cfg.cost*.48));
+}
+
+function placeTower(x,y){
+  if(!selectedType) return;
+  const t = towersConfig[selectedType];
+  const state=placementState(x,y);
+  if(!state.valid){ ui.status.textContent=state.reason; return; }
+  gold -= t.cost;
+  const maxHp = towerMaxHp(selectedType);
+  towers.push({type:selectedType, x,y, level:1, range:t.range, rate:t.rate, damage:t.damage, cooldown:0, totalSpent:t.cost, recoil:0, hp:maxHp, maxHp, hitFlash:0});
+  updateHUD();
+  ui.status.textContent = `${t.name} deployed.`;
+  sfx("build");
+}
+
+function updateSelected(){
+  if(selectedTower){
+    const t = towersConfig[selectedTower.type];
+    const cost = Math.round(t.cost*(0.75 + selectedTower.level*0.45));
+    const rCost = repairCost(selectedTower);
+    const hpPct = Math.max(0,Math.round((selectedTower.hp/selectedTower.maxHp)*100));
+    ui.selectedInfo.innerHTML = `<b>${t.name}</b><br>Level ${selectedTower.level} • Health ${Math.ceil(selectedTower.hp)}/${Math.ceil(selectedTower.maxHp)} (${hpPct}%)<br>Damage ${Math.round(selectedTower.damage)} • Range ${Math.round(selectedTower.range)}<br>Upgrade ${cost}g${rCost ? ` • Repair ${rCost}g` : " • Fully repaired"}`;
+    ui.upgradeBtn.disabled = false;
+    ui.repairBtn.disabled = rCost===0;
+    ui.sellBtn.disabled = false;
+  } else {
+    ui.selectedInfo.textContent = selectedType ? `${towersConfig[selectedType].name} ready to deploy.` : "Select a defense. A live placement preview will appear over the battlefield.";
+    ui.upgradeBtn.disabled = true;
+    ui.repairBtn.disabled = true;
+    ui.sellBtn.disabled = true;
+  }
+}
+
+ui.upgradeBtn.addEventListener("click",()=>{
+  if(!selectedTower) return;
+  const t = towersConfig[selectedTower.type];
+  const cost = Math.round(t.cost*(0.75 + selectedTower.level*0.45));
+  if(gold < cost){ ui.status.textContent = "Not enough gold."; return; }
+  gold -= cost;
+  selectedTower.totalSpent += cost;
+  selectedTower.level++;
+  selectedTower.damage *= 1.32;
+  selectedTower.range *= 1.07;
+  selectedTower.rate *= 0.90;
+  selectedTower.maxHp *= 1.18;
+  selectedTower.hp = Math.min(selectedTower.maxHp, selectedTower.hp + selectedTower.maxHp*.30);
+  updateHUD();
+  updateSelected();
+  ui.status.textContent = "Defense upgraded.";
+  sfx("upgrade");
+});
+
+
+ui.repairBtn.addEventListener("click",()=>{
+  if(!selectedTower) return;
+  const cost = repairCost(selectedTower);
+  if(cost<=0){ ui.status.textContent = "This position is already at full strength."; return; }
+  if(gold < cost){ ui.status.textContent = "Not enough gold to repair this position."; return; }
+  gold -= cost;
+  selectedTower.hp = selectedTower.maxHp;
+  updateHUD();
+  updateSelected();
+  ui.status.textContent = "Position repaired to full strength.";
+  sfx("build");
+});
+
+ui.sellBtn.addEventListener("click",()=>{
+  if(!selectedTower) return;
+  const value = Math.round(selectedTower.totalSpent*0.62);
+  gold += value;
+  towers = towers.filter(t=>t!==selectedTower);
+  selectedTower = null;
+  updateHUD();
+  updateSelected();
+  ui.status.textContent = `Position sold for ${value}g.`;
+  sfx("sell");
+});
+
+ui.cancelBtn.addEventListener("click",()=>{
+  selectedType = null;
+  selectedTower = null;
+  placementHover.inside=false;
+  document.querySelectorAll(".tower").forEach(x=>x.classList.remove("selected"));
+  updateSelected();
+  ui.status.textContent = "Selection cleared.";
+});
+
+function enemyProfile(n){
+  let i = 0;
+  if(n>=4) i=1;
+  if(n>=7) i=2;
+  if(n>=10) i=3;
+  return enemyRoster[i];
+}
+function waveCount(n){ return 4 + Math.floor(n*1.65); }
+function bonus(n){ return 38 + n*10; }
+function isBossWave(n){
+  if(!currentMission) return false;
+  return n===currentMission.waves || (currentMission.waves>=5 && n===3);
+}
+function bossProfile(n){
+  const base = enemyProfile(n);
+  const midBoss = currentMission && currentMission.waves>=5 && n===3 && n!==currentMission.waves;
+  const bossNames = factionKey==="usa"
+    ? (midBoss ? ["Lancer Captain","Veteran Coronel","Elite Guard Captain"] : ["Siege Colonel","Presidential Guard","Storm Column Commander"])
+    : (midBoss ? ["Dragoon Captain","Volunteer Major","Ranger Captain"] : ["Siege Battery Commander","General's Guard","Shock Column Commander"]);
+  const pick = bossNames[currentMissionIndex % bossNames.length];
+  const hpMult = midBoss ? 4.8 : 7.5;
+  const rewardMult = midBoss ? 6 : 9;
+  return {
+    name: (midBoss ? "Elite: " : "Boss: ") + pick,
+    hp: base.hp * hpMult,
+    speed: base.speed * (midBoss ? .82 : .74),
+    reward: Math.round(base.reward * rewardMult),
+    color: base.color,
+    kind: base.kind,
+    isBoss: true,
+    attackRange: base.kind==="cavalry" ? 138 : 156,
+    attackRate: base.kind==="cavalry" ? .95 : 1.08,
+    attackDamage: (base.kind==="cavalry" ? 9.8 : 8.6) + wave*0.9 + currentMissionIndex*1.15,
+    livesDamage: midBoss ? 2 : 3
+  };
+}
+
+function updateIntel(){
+  if(!faction || !currentMission){
+    ui.enemyType.textContent="—";
+    ui.enemyCount.textContent="—";
+    ui.waveBonus.textContent="—";
+    ui.bossType.textContent="None";
+    return;
+  }
+  const next = Math.min(wave+1, currentMission.waves);
+  if(wave >= currentMission.waves && !spawning && enemies.length===0){
+    ui.enemyType.textContent = "Complete";
+    ui.enemyCount.textContent = "0";
+    ui.waveBonus.textContent = "—";
+    ui.bossType.textContent = "Cleared";
+    ui.waveNote.textContent = "Mission objective complete. Awaiting report.";
+    ui.waveBtn.disabled = true;
+    ui.waveBtn.textContent = "Mission Complete";
+    return;
+  }
+  const p = enemyProfile(next);
+  const bossWave = isBossWave(next);
+  ui.enemyType.textContent = p.name;
+  ui.enemyCount.textContent = bossWave ? `${Math.max(3,waveCount(next)-2)} + boss` : waveCount(next);
+  ui.waveBonus.textContent = `+${bonus(next)}g`;
+  ui.bossType.textContent = bossWave ? bossProfile(next).name : "None";
+  ui.waveNote.textContent = bossWave
+    ? "Boss-class assault detected. Expect much heavier return fire and increased line damage."
+    : (p.kind==="cavalry"
+        ? "Fast cavalry can return fire at nearby defenses. Keep vulnerable positions repaired."
+        : "Enemy infantry will fire on defenses inside musket range while continuing to advance.");
+  ui.waveBtn.textContent = bossWave ? `Start Boss Wave ${next}` : `Start Wave ${next}`;
+  ui.waveBtn.disabled = !missionStarted || spawning || enemies.length>0 || gameEnded;
+}
+
+function startWave(){
+  if(!missionStarted || !currentMission || spawning || enemies.length>0 || gameEnded) return;
+  if(wave >= currentMission.waves) return;
+  wave++;
+  bossPending = isBossWave(wave);
+  bossSpawnedThisWave = false;
+  spawnRemaining = Math.max(3, waveCount(wave) - (bossPending ? 2 : 0));
+  spawning = true;
+  spawnTimer = 0;
+  ui.waveFlash.textContent = bossPending ? `Boss Wave ${wave}` : `Wave ${wave}`;
+  ui.waveFlash.classList.remove("show"); void ui.waveFlash.offsetWidth; ui.waveFlash.classList.add("show");
+  ui.status.textContent = bossPending ? `${currentMission.name}: boss wave ${wave} incoming.` : `${currentMission.name}: Wave ${wave} incoming.`;
+  sfx("wave");
+  updateHUD(); updateIntel();
+}
+ui.waveBtn.addEventListener("click", startWave);
+
+ui.speedBtn.addEventListener("click",()=>{
+  speed = speed===1 ? 2 : speed===2 ? 3 : 1;
+  ui.speedBtn.textContent = `Speed ${speed}×`;
+});
+ui.pauseBtn.addEventListener("click",()=>{
+  paused = !paused;
+  ui.pauseBtn.textContent = paused ? "Resume" : "Pause";
+});
+ui.restartBtn.addEventListener("click",()=>{
+  hide(ui.endOverlay);
+  show(ui.factionOverlay);
+  factionKey = null;
+  faction = null;
+  towersConfig = {};
+  enemyRoster = [];
+  ui.towerList.innerHTML = "";
+  ui.brandName.textContent = "Choose Your Side";
+  ui.brandSub.textContent = "Campaign not started";
+  ui.commanderName.textContent = "No Command";
+  ui.commanderText.textContent = "Select a faction to begin the campaign.";
+  ui.missionStat.textContent = "—";
+  setAccent("#5f82d6");
+  resetCore();
+  updateIntel();
+  ui.status.textContent = "Choose Mexico or the United States to begin.";
+});
+
+function spawnEnemy(isBoss=false){
+  const p = isBoss ? bossProfile(wave) : enemyProfile(wave);
+  const scale = 1 + (wave-1)*0.105 + currentMissionIndex*0.06;
+  const start = currentMission.path[0];
+  const cavalry = p.kind === "cavalry";
+  enemies.push({
+    x:start.x, y:start.y,
+    pathIndex:0, progress:0,
+    hp:p.hp*scale, maxHp:p.hp*scale,
+    speed:isBoss ? p.speed*(1+(wave-1)*0.008) : p.speed*(1+(wave-1)*0.014),
+    reward:p.reward, color:p.color, kind:p.kind,
+    isBoss: !!isBoss,
+    slowTimer:0, anim:Math.random()*6, hitFlash:0,
+    faceX:1, faceY:0, muzzle:0,
+    attackRange:isBoss ? p.attackRange : (cavalry ? 102 : 126),
+    attackRate:isBoss ? p.attackRate : (cavalry ? 1.18 : 1.62),
+    attackDamage:isBoss ? p.attackDamage : ((cavalry ? 6.2 : 5.4) + wave*.38 + currentMissionIndex*.42),
+    attackCooldown:.45 + Math.random()*.75,
+    livesDamage:isBoss ? p.livesDamage : 1
+  });
+}
+
+function fireTower(t,target){
+  const cfg = towersConfig[t.type];
+  shots.push({x:t.x,y:t.y,tx:target.x,ty:target.y,life:.10,type:t.type,side:"player"});
+  target.hp -= t.damage;
+  target.hitFlash = .08;
+  t.recoil = .10;
+  if(cfg.slow) target.slowTimer = 1.2;
+  if(cfg.splash){
+    enemies.forEach(e=>{
+      if(e!==target && Math.hypot(e.x-target.x, e.y-target.y)<cfg.splash){
+        e.hp -= t.damage*0.42;
+        e.hitFlash = .05;
+      }
+    });
+  }
+  for(let i=0;i<6;i++) smoke.push({x:t.x+(Math.random()-.5)*8,y:t.y-4+(Math.random()-.5)*4,vx:(Math.random()-.5)*12,vy:-8-Math.random()*8,life:.42,size:4+Math.random()*3});
+  if(t.type==="cannon") sfx("cannon"); else sfx("musket");
+}
+
+
+function fireEnemy(e,target){
+  if(!target || target.hp<=0) return;
+  shots.push({x:e.x,y:e.y-7,tx:target.x,ty:target.y,life:.12,type:"enemyMusket",side:"enemy"});
+  target.hp -= e.attackDamage;
+  target.hitFlash = .10;
+  e.muzzle = .10;
+  for(let i=0;i<3;i++) smoke.push({x:e.x+(Math.random()-.5)*5,y:e.y-10+(Math.random()-.5)*4,vx:(Math.random()-.5)*8,vy:-6-Math.random()*5,life:.28,size:3+Math.random()*2});
+  sfx("musket");
+}
+
+function destroyDeadTowers(){
+  const dead = towers.filter(t=>t.hp<=0);
+  if(!dead.length) return;
+  dead.forEach(t=>{
+    for(let i=0;i<15;i++) particles.push({x:t.x,y:t.y,vx:(Math.random()-.5)*58,vy:(Math.random()-.5)*58,life:.55,color:"#7d6650",size:2+Math.floor(Math.random()*4)});
+    for(let i=0;i<8;i++) smoke.push({x:t.x+(Math.random()-.5)*12,y:t.y+(Math.random()-.5)*8,vx:(Math.random()-.5)*12,vy:-10-Math.random()*10,life:.6,size:5+Math.random()*4});
+  });
+  if(selectedTower && selectedTower.hp<=0){
+    selectedTower = null;
+    updateSelected();
+  }
+  towers = towers.filter(t=>t.hp>0);
+  ui.status.textContent = dead.length===1 ? "A defensive position has been destroyed!" : `${dead.length} defensive positions have been destroyed!`;
+}
+
+function missionComplete(){
+  missionStarted = false;
+  ui.completeTitle.textContent = `${currentMission.name} Complete`;
+  ui.completeText.textContent = `You held through ${currentMission.waves} waves and defeated ${kills} enemy troops in this mission.`;
+  ui.nextMissionBtn.textContent = currentMissionIndex === MISSIONS.length-1 ? "View Campaign Report" : "Next Mission";
+  sfx("complete");
+  show(ui.missionCompleteOverlay);
+}
+function showCampaignVictory(){
+  ui.endTitle.textContent = "Campaign Victory";
+  ui.endText.textContent = `${faction.name} completed all ${MISSIONS.length} missions. Total enemy troops defeated: ${kills}.`;
+  sfx("complete");
+  show(ui.endOverlay);
+}
+function endGame(){
+  gameEnded = true;
+  ui.endTitle.textContent = "Defeat";
+  ui.endText.textContent = `${faction.name} was overrun during ${currentMission.name}, wave ${wave}. Total enemy troops defeated: ${kills}.`;
+  sfx("defeat");
+  show(ui.endOverlay);
+}
+
+function update(dt){
+  if(!faction || paused || gameEnded || !missionStarted) return;
+  dt *= speed;
+
+  if(spawning){
+    spawnTimer -= dt;
+    if(spawnTimer<=0){
+      if(spawnRemaining>0){
+        spawnEnemy(false);
+        spawnRemaining--;
+        spawnTimer = .58;
+      } else if(bossPending && !bossSpawnedThisWave){
+        const nextBoss = bossProfile(wave);
+        spawnEnemy(true);
+        bossSpawnedThisWave = true;
+        bossPending = false;
+        spawnTimer = .9;
+        ui.status.textContent = `${currentMission.name}: ${nextBoss.name} has entered the field!`;
+      }
+    }
+    if(spawnRemaining<=0 && !bossPending) spawning = false;
+  }
+
+  enemies.forEach(e=>{
+    if(e.slowTimer>0) e.slowTimer -= dt;
+    if(e.hitFlash>0) e.hitFlash -= dt;
+    if(e.muzzle>0) e.muzzle -= dt;
+    e.attackCooldown -= dt;
+    e.anim += dt*10;
+
+    let combatTarget = null;
+    let combatDistance = Infinity;
+    towers.forEach(t=>{
+      if(t.hp<=0) return;
+      const d = Math.hypot(t.x-e.x,t.y-e.y);
+      if(d<=e.attackRange && d<combatDistance){ combatDistance=d; combatTarget=t; }
+    });
+    if(combatTarget && e.attackCooldown<=0){
+      fireEnemy(e,combatTarget);
+      e.attackCooldown = e.attackRate*(.88+Math.random()*.24);
+    }
+
+    const combatMove = combatTarget ? .72 : 1;
+    let move = e.speed*dt*(e.slowTimer>0?.72:1)*combatMove;
+    const path = currentMission.path;
+    while(move>0 && e.pathIndex<path.length-1){
+      const a = path[e.pathIndex], b = path[e.pathIndex+1];
+      const seg = Math.hypot(b.x-a.x, b.y-a.y);
+      e.faceX = (b.x-a.x)/seg;
+      e.faceY = (b.y-a.y)/seg;
+      const left = seg*(1-e.progress);
+      if(move < left){
+        e.progress += move/seg;
+        e.x = a.x + (b.x-a.x)*e.progress;
+        e.y = a.y + (b.y-a.y)*e.progress;
+        move = 0;
+      } else {
+        move -= left;
+        e.pathIndex++;
+        e.progress = 0;
+        const p = path[e.pathIndex];
+        e.x = p.x; e.y = p.y;
+      }
+    }
+    if(e.pathIndex>=path.length-1) e.escaped = true;
+  });
+
+  destroyDeadTowers();
+
+  enemies.filter(e=>e.escaped).forEach(e=>lives -= (e.livesDamage || 1));
+  enemies = enemies.filter(e=>!e.escaped);
+
+  towers.forEach(t=>{
+    if(t.recoil>0) t.recoil -= dt;
+    if(t.hitFlash>0) t.hitFlash -= dt;
+    t.cooldown -= dt;
+    if(t.cooldown>0) return;
+    let target = null, best = -1;
+    enemies.forEach(e=>{
+      if(Math.hypot(e.x-t.x, e.y-t.y) <= t.range){
+        const prog = e.pathIndex + e.progress;
+        if(prog > best){ best = prog; target = e; }
+      }
+    });
+    if(target){
+      fireTower(t,target);
+      t.cooldown = t.rate;
+    }
+  });
+
+  enemies.filter(e=>e.hp<=0).forEach(e=>{
+    gold += e.reward;
+    kills++;
+    const burst = e.isBoss ? 28 : 10;
+    for(let i=0;i<burst;i++) particles.push({x:e.x,y:e.y,vx:(Math.random()-.5)*44,vy:(Math.random()-.5)*44,life:e.isBoss?.58:.38,color:e.color,size:2+Math.floor(Math.random()*(e.isBoss?5:3))});
+    if(e.isBoss){
+      ui.status.textContent = `${e.name} defeated! Reward +${e.reward}g`;
+      sfx("complete");
+    }
+  });
+  enemies = enemies.filter(e=>e.hp>0);
+
+  shots.forEach(s=>s.life -= dt);
+  shots = shots.filter(s=>s.life>0);
+
+  particles.forEach(p=>{ p.life -= dt; p.x += p.vx*dt; p.y += p.vy*dt; });
+  particles = particles.filter(p=>p.life>0);
+
+  smoke.forEach(s=>{ s.life -= dt; s.x += s.vx*dt; s.y += s.vy*dt; s.size += dt*4; });
+  smoke = smoke.filter(s=>s.life>0);
+
+  if(!spawning && enemies.length===0 && wave>0 && ui.waveStat.dataset.cleared!==String(wave)){
+    gold += bonus(wave);
+    ui.waveStat.dataset.cleared = String(wave);
+    ui.status.textContent = `${currentMission.name}: Wave ${wave} cleared. Bonus ${bonus(wave)}g awarded.`;
+    if(wave >= currentMission.waves){
+      missionComplete();
+    }
+  }
+
+  if(lives<=0) endGame();
+
+  updateHUD();
+  updateIntel();
+}
+
+function resetCore(){
+  gold = currentMission ? currentMission.startGold : 180;
+  lives = currentMission ? currentMission.lives : 20;
+  wave = 0;
+  towers = [];
+  enemies = [];
+  shots = [];
+  particles = [];
+  smoke = [];
+  selectedType = null;
+  selectedTower = null;
+  spawning = false;
+  spawnRemaining = 0;
+  spawnTimer = 0;
+  bossPending = false;
+  bossSpawnedThisWave = false;
+  speed = 1;
+  paused = false;
+  gameEnded = false;
+  missionStarted = false;
+  ui.waveStat.dataset.cleared = "";
+  ui.speedBtn.textContent = "Speed 1×";
+  ui.pauseBtn.textContent = "Pause";
+  updateSelected();
+  updateHUD();
+}
+
+function updateHUD(){
+  ui.missionStat.textContent = currentMission ? `${currentMissionIndex+1}/${MISSIONS.length}` : "—";
+  ui.waveStat.textContent = wave;
+  ui.goldStat.textContent = Math.max(0, Math.floor(gold));
+  ui.livesStat.textContent = Math.max(0, lives);
+  ui.killsStat.textContent = kills;
+}
+
+function shadeHex(hex, amount){
+  const clean=String(hex||"#777777").replace("#","");
+  const full=clean.length===3 ? clean.split("").map(c=>c+c).join("") : clean.padEnd(6,"7").slice(0,6);
+  const num=parseInt(full,16);
+  if(Number.isNaN(num)) return hex;
+  const r=Math.max(0,Math.min(255,(num>>16)+amount));
+  const g=Math.max(0,Math.min(255,((num>>8)&255)+amount));
+  const b=Math.max(0,Math.min(255,(num&255)+amount));
+  return `#${Math.round(r).toString(16).padStart(2,"0")}${Math.round(g).toString(16).padStart(2,"0")}${Math.round(b).toString(16).padStart(2,"0")}`;
+}
+
+function px(x,y,w,h,c){
+  ctx.fillStyle = c;
+  ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
+}
+function roundedRect(x,y,w,h,r,color){
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawTerrain(){
+  const theme = currentMission?.theme || "plains";
+  let c1="#6c8f59", c2="#87a66f";
+  if(theme==="desert"){c1="#b79562";c2="#d0b37b";}
+  if(theme==="town"){c1="#8e9278";c2="#a9aa91";}
+  if(theme==="coast"){c1="#6f9a65";c2="#8fb37e";}
+  if(theme==="fortress"){c1="#7f8d67";c2="#9ca882";}
+  if(theme==="brush"){c1="#668655";c2="#7da169";}
+
+  const bg = ctx.createLinearGradient(0,0,W,H);
+  bg.addColorStop(0,c2);
+  bg.addColorStop(1,c1);
+  ctx.fillStyle=bg;
+  ctx.fillRect(0,0,W,H);
+
+  // broad terrain shading
+  for(let i=0;i<18;i++){
+    const x=(i*137)%W, y=(i*83)%H;
+    const r=40+(i%5)*18;
+    ctx.fillStyle=i%2===0?"rgba(255,255,255,.035)":"rgba(40,55,35,.045)";
+    ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  }
+
+  if(theme==="plains" || theme==="brush"){
+    for(let i=0;i<17;i++) drawBush(40+i*47+(i%3)*6,60+(i*33)%410);
+    for(let i=0;i<9;i++) drawTree(70+i*82,410-(i%3)*24);
+  }
+  if(theme==="town"){
+    for(let i=0;i<6;i++) drawHouse(92+i*122,74+(i%2)*55,i%2===0);
+    for(let i=0;i<4;i++) drawWall(120+i*172,445-(i%2)*40,72);
+  }
+  if(theme==="desert"){
+    for(let i=0;i<12;i++) drawRock(60+i*66,70+(i*37)%430);
+    for(let i=0;i<9;i++) drawCactus(120+i*74,110+(i*29)%360);
+  }
+  if(theme==="coast"){
+    drawWater(0,430,W,130);
+    for(let i=0;i<6;i++) drawPalm(80+i*120,392+(i%2)*12);
+    drawFort(760,56);
+  }
+  if(theme==="fortress"){
+    for(let i=0;i<8;i++) drawRock(50+i*100,82+(i%2)*50);
+    drawFort(720,48);
+    drawHill(250,58,140,80);
+    drawHill(535,315,180,92);
+  }
+  if(theme==="brush" || theme==="plains") drawCreek(0,475,W,85);
+
+  const path=currentMission?.path||[];
+  if(path.length){
+    ctx.lineCap="round";ctx.lineJoin="round";
+    ctx.strokeStyle="rgba(80,60,40,.34)";ctx.lineWidth=46;
+    ctx.beginPath();ctx.moveTo(path[0].x,path[0].y);path.slice(1).forEach(p=>ctx.lineTo(p.x,p.y));ctx.stroke();
+    const road=ctx.createLinearGradient(0,0,W,H);
+    road.addColorStop(0,"#c5a36f");road.addColorStop(1,"#a98356");
+    ctx.strokeStyle=road;ctx.lineWidth=34;ctx.stroke();
+    ctx.strokeStyle="rgba(255,255,255,.16)";ctx.lineWidth=3;ctx.setLineDash([8,12]);ctx.stroke();ctx.setLineDash([]);
+  }
+}
+
+function drawBush(x,y){
+  ctx.fillStyle="#4e7d48";
+  ctx.beginPath();ctx.ellipse(x,y,13,8,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#649458";
+  ctx.beginPath();ctx.ellipse(x+10,y-3,12,9,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#739f63";
+  ctx.beginPath();ctx.ellipse(x-8,y-2,10,7,0,0,Math.PI*2);ctx.fill();
+}
+function drawTree(x,y){
+  ctx.fillStyle="#67492f";roundedRect(x-4,y+9,8,18,3,"#67492f");
+  ctx.fillStyle="#2f6f47";ctx.beginPath();ctx.arc(x,y-3,15,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#3e8456";ctx.beginPath();ctx.arc(x+8,y-10,12,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#4b925f";ctx.beginPath();ctx.arc(x-9,y-8,11,0,Math.PI*2);ctx.fill();
+}
+function drawCactus(x,y){
+  ctx.lineCap="round";ctx.strokeStyle="#3f8759";ctx.lineWidth=7;
+  ctx.beginPath();ctx.moveTo(x,y+8);ctx.lineTo(x,y-17);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x,y-6);ctx.lineTo(x-9,y-10);ctx.lineTo(x-9,y-16);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x,y-2);ctx.lineTo(x+9,y-6);ctx.lineTo(x+9,y-12);ctx.stroke();
+}
+function drawRock(x,y){
+  const g=ctx.createLinearGradient(x,y,x+22,y+16);
+  g.addColorStop(0,"#aaa083");g.addColorStop(1,"#716954");
+  ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x+10,y+7,13,8,-.15,0,Math.PI*2);ctx.fill();
+}
+function drawWater(x,y,w,h){
+  const g=ctx.createLinearGradient(0,y,0,y+h);
+  g.addColorStop(0,"#58a7d6");g.addColorStop(1,"#2e6e9e");
+  ctx.fillStyle=g;ctx.fillRect(x,y,w,h);
+  ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=2;
+  for(let i=0;i<w;i+=42){ctx.beginPath();ctx.moveTo(i,y+20+(i%84?5:0));ctx.quadraticCurveTo(i+10,y+15,i+24,y+20);ctx.stroke();}
+}
+function drawCreek(x,y,w,h){
+  const g=ctx.createLinearGradient(0,y,0,y+h);
+  g.addColorStop(0,"#65addb");g.addColorStop(1,"#3c7eae");
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x,y+12);
+  for(let i=0;i<=w;i+=28)ctx.lineTo(i,y+14+Math.sin(i*.03)*8);
+  ctx.lineTo(w,y+h);ctx.lineTo(0,y+h);ctx.closePath();ctx.fill();
+}
+function drawHouse(x,y,stone){
+  roundedRect(x,y,54,38,7,stone?"#a89b84":"#b88d60");
+  ctx.fillStyle=stone?"#7f4c3e":"#83503d";ctx.beginPath();ctx.moveTo(x-4,y+3);ctx.lineTo(x+27,y-15);ctx.lineTo(x+58,y+3);ctx.closePath();ctx.fill();
+  roundedRect(x+8,y+12,12,20,3,"#6a4732");
+  roundedRect(x+30,y+11,14,11,3,"#72a8ce");
+}
+function drawWall(x,y,w){
+  roundedRect(x,y,w,18,4,"#93846f");
+  ctx.strokeStyle="rgba(255,255,255,.18)";ctx.lineWidth=1;
+  for(let i=10;i<w;i+=16){ctx.beginPath();ctx.moveTo(x+i,y+2);ctx.lineTo(x+i-5,y+16);ctx.stroke();}
+}
+function drawFort(x,y){
+  roundedRect(x,y,92,62,8,"#9c8d76");
+  roundedRect(x+8,y+10,22,16,4,"#80715d");
+  roundedRect(x+62,y+10,22,16,4,"#80715d");
+  roundedRect(x+36,y+20,20,30,4,"#655542");
+}
+function drawHill(x,y,w,h){
+  const g=ctx.createLinearGradient(0,y,0,y+h);g.addColorStop(0,"#9b9775");g.addColorStop(1,"#747058");
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(x,y+h);ctx.quadraticCurveTo(x+w*.35,y+h*.15,x+w*.5,y+h*.05);ctx.quadraticCurveTo(x+w*.72,y+h*.12,x+w,y+h);ctx.closePath();ctx.fill();
+}
+function drawPalm(x,y){
+  ctx.strokeStyle="#6a4b30";ctx.lineWidth=6;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(x,y+22);ctx.lineTo(x,y);ctx.stroke();
+  for(let i=0;i<6;i++){
+    ctx.strokeStyle="#3d8f59";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(i*Math.PI/3)*22,y-14+Math.sin(i*Math.PI/3)*10);ctx.stroke();
+  }
+}
+
+function drawTacticalBase(x,y,r,color,enemy=false){
+  ctx.save();
+  ctx.fillStyle="rgba(3,8,15,.28)";
+  ctx.beginPath();ctx.ellipse(x,y+15,r*1.08,r*.42,0,0,Math.PI*2);ctx.fill();
+
+  ctx.strokeStyle=enemy?"rgba(239,88,78,.90)":color;
+  ctx.lineWidth=3;
+  ctx.globalAlpha=.92;
+  ctx.beginPath();ctx.ellipse(x,y+13,r,r*.35,0,0,Math.PI*2);ctx.stroke();
+
+  ctx.strokeStyle=enemy?"rgba(255,166,145,.30)":"rgba(255,255,255,.28)";
+  ctx.lineWidth=1;
+  ctx.beginPath();ctx.ellipse(x,y+13,r-4,(r-4)*.35,0,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+}
+
+function drawSoldierModel(x,y,color,opts={}){
+  const scale=opts.scale||1;
+  const facing=opts.facing||1;
+  const crouch=!!opts.crouch;
+  const elite=!!opts.elite;
+  const flash=!!opts.flash;
+  const coat=flash?"#ffffff":color;
+  const dark=flash?"#d5d5d5":shadeHex(coat,-32);
+  const light=flash?"#ffffff":shadeHex(coat,26);
+  const skin="#d0a172";
+  const sy=crouch?5:0;
+
+  ctx.save();
+  ctx.translate(x,y+sy);
+  ctx.scale(scale,scale);
+
+  // legs / boots
+  ctx.strokeStyle="#393633";ctx.lineWidth=4;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(-4,5);ctx.lineTo(-5,15);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(4,5);ctx.lineTo(5,15);ctx.stroke();
+  ctx.strokeStyle="#171b22";ctx.lineWidth=3;
+  ctx.beginPath();ctx.moveTo(-7,15);ctx.lineTo(-3,15);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(3,15);ctx.lineTo(7,15);ctx.stroke();
+
+  // coat with subtle shoulder shape
+  const coatGrad=ctx.createLinearGradient(-9,-9,9,9);
+  coatGrad.addColorStop(0,light);coatGrad.addColorStop(.55,coat);coatGrad.addColorStop(1,dark);
+  roundedRect(-9,-10,18,17,5,coatGrad);
+
+  // cross belt
+  ctx.strokeStyle="rgba(241,226,194,.88)";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(-6,-8);ctx.lineTo(6,5);ctx.stroke();
+
+  // head
+  ctx.fillStyle=skin;ctx.beginPath();ctx.arc(0,-15,5.3,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#5c4433";ctx.beginPath();ctx.arc(0,-16,5.3,Math.PI,Math.PI*2);ctx.fill();
+
+  // period cap / shako-ish silhouette
+  roundedRect(-6,-22,12,4,2,elite?"#a93232":"#202a35");
+  if(elite) roundedRect(-2,-26,4,5,2,"#d9b34d");
+
+  // backpack
+  roundedRect(facing>0?-11:5,-7,6,11,2,"#705b47");
+
+  // musket
+  ctx.strokeStyle="#3a332c";ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(facing*4,-4);
+  ctx.lineTo(facing*21,-8);
+  ctx.stroke();
+  ctx.strokeStyle="#a98d69";ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(facing*5,-5);ctx.lineTo(facing*20,-9);ctx.stroke();
+
+  // bayonet highlight
+  ctx.strokeStyle="#cbd3d8";ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.moveTo(facing*20,-9);ctx.lineTo(facing*25,-10);ctx.stroke();
+
+  ctx.restore();
+}
+
+function drawHorseModel(x,y,color="#775338",scale=1){
+  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+  const hg=ctx.createLinearGradient(-20,-5,17,12);
+  hg.addColorStop(0,shadeHex(color,18));hg.addColorStop(1,shadeHex(color,-22));
+  roundedRect(-18,-3,31,14,7,hg);
+  roundedRect(10,-8,12,10,5,hg);
+  ctx.strokeStyle=shadeHex(color,-40);ctx.lineWidth=4;ctx.lineCap="round";
+  ctx.beginPath();ctx.moveTo(-11,8);ctx.lineTo(-13,17);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(5,8);ctx.lineTo(6,17);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(12,5);ctx.lineTo(15,14);ctx.stroke();
+  ctx.strokeStyle="#27231f";ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(18,-5);ctx.lineTo(25,-1);ctx.stroke();
+  ctx.restore();
+}
+
+function drawCannonModel(x,y,scale=1){
+  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+  ctx.fillStyle="rgba(0,0,0,.16)";ctx.beginPath();ctx.ellipse(0,13,22,6,0,0,Math.PI*2);ctx.fill();
+  const barrel=ctx.createLinearGradient(-14,-4,22,3);barrel.addColorStop(0,"#949ba4");barrel.addColorStop(1,"#444c55");
+  roundedRect(-14,-6,28,10,5,barrel);
+  roundedRect(8,-4,23,5,3,"#3f464e");
+  ctx.fillStyle="#654b34";ctx.beginPath();ctx.arc(-7,8,7,0,Math.PI*2);ctx.fill();ctx.beginPath();ctx.arc(8,8,7,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#3e3026";ctx.lineWidth=2;ctx.beginPath();ctx.arc(-7,8,4,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(8,8,4,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+}
+
+function drawPlacementPreview(){
+  if(!selectedType || !placementHover.inside || !missionStarted || gameEnded) return;
+  const cfg=towersConfig[selectedType];
+  if(!cfg) return;
+  const x=placementHover.x,y=placementHover.y;
+  const state=placementState(x,y);
+  const good=state.valid;
+  const ring=good?"rgba(83,214,139,.95)":"rgba(239,83,75,.95)";
+  const fill=good?"rgba(83,214,139,.10)":"rgba(239,83,75,.10)";
+
+  ctx.save();
+  ctx.fillStyle=fill;
+  ctx.beginPath();ctx.arc(x,y,cfg.range,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=ring;ctx.lineWidth=2;ctx.setLineDash([8,6]);
+  ctx.beginPath();ctx.arc(x,y,cfg.range,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+
+  // placement marker
+  ctx.fillStyle=good?"rgba(46,181,104,.23)":"rgba(199,54,49,.25)";
+  ctx.beginPath();ctx.ellipse(x,y+13,30,11,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle=ring;ctx.lineWidth=4;
+  ctx.beginPath();ctx.ellipse(x,y+13,30,11,0,0,Math.PI*2);ctx.stroke();
+
+  ctx.globalAlpha=.72;
+  if(selectedType==="cannon"){
+    drawCannonModel(x,y,1.05);
+  }else if(selectedType==="fort"||selectedType==="works"){
+    const grad=ctx.createLinearGradient(x-22,y-16,x+22,y+15);
+    grad.addColorStop(0,"#cfaa7a");grad.addColorStop(1,"#8e6443");
+    roundedRect(x-22,y-15,44,30,8,grad);
+    roundedRect(x-12,y-7,24,15,5,"#d8bc99");
+  }else if(selectedType==="lancer"){
+    drawHorseModel(x,y-2,"#775338",1.02);
+    drawSoldierModel(x+1,y-12,cfg.color,{scale:.92});
+  }else{
+    drawSoldierModel(x-9,y,cfg.color,{scale:1.0,crouch:selectedType==="rifle"});
+    drawSoldierModel(x+10,y+1,cfg.color,{scale:.94,facing:-1});
+  }
+  ctx.globalAlpha=1;
+
+  roundedRect(x-69,y-58,138,28,10,"rgba(8,14,24,.88)");
+  ctx.fillStyle="#fff";ctx.font="700 11px Inter, sans-serif";ctx.textAlign="center";
+  ctx.fillText(`${good?"DEPLOY":"BLOCKED"} • ${cfg.cost}g`,x,y-40);
+  ctx.restore();
+}
+
+function drawTower(t){
+  const cfg=towersConfig[t.type],x=t.x,y=t.y+(t.recoil>0?1.5:0);
+  const friendlyColor=faction?.accent||"#6aa7ff";
+
+  if(selectedTower===t){
+    ctx.fillStyle="rgba(247,207,99,.055)";
+    ctx.beginPath();ctx.arc(x,y,t.range,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(247,207,99,.90)";ctx.lineWidth=2;ctx.setLineDash([7,5]);
+    ctx.beginPath();ctx.arc(x,y,t.range,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+  }
+
+  drawTacticalBase(x,y,31,friendlyColor,false);
+
+  if(t.type==="cannon"){
+    drawCannonModel(x,y-2,1.12);
+    drawSoldierModel(x-21,y+2,cfg.color,{scale:.78,facing:1});
+    drawSoldierModel(x+17,y+5,cfg.color,{scale:.76,facing:-1,crouch:true});
+  }else if(t.type==="fort"||t.type==="works"){
+    const grad=ctx.createLinearGradient(x-22,y-17,x+22,y+16);
+    grad.addColorStop(0,"#d0a778");grad.addColorStop(1,"#88603f");
+    roundedRect(x-23,y-16,46,32,9,grad);
+    roundedRect(x-14,y-8,28,17,6,"#d9bc96");
+    roundedRect(x-7,y-2,14,7,3,"#594432");
+    drawSoldierModel(x-12,y-10,cfg.color,{scale:.72,facing:1});
+    drawSoldierModel(x+12,y-9,cfg.color,{scale:.72,facing:-1});
+  }else if(t.type==="lancer"){
+    drawHorseModel(x,y-4,"#785436",1.08);
+    drawSoldierModel(x+1,y-15,cfg.color,{scale:.96,facing:1});
+    ctx.strokeStyle="#6d6049";ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(x+5,y-23);ctx.lineTo(x+29,y-47);ctx.stroke();
+    ctx.fillStyle=factionKey==="mexico"?"#3fa26f":"#5f82d6";
+    ctx.beginPath();ctx.moveTo(x+29,y-47);ctx.lineTo(x+38,y-43);ctx.lineTo(x+30,y-38);ctx.closePath();ctx.fill();
+  }else if(t.type==="rifle"){
+    drawSoldierModel(x-10,y+2,cfg.color,{scale:1.02,crouch:true,facing:1});
+    drawSoldierModel(x+11,y-2,cfg.color,{scale:.98,facing:1});
+  }else{
+    drawSoldierModel(x-10,y+1,cfg.color,{scale:1.02,facing:1});
+    drawSoldierModel(x+10,y,cfg.color,{scale:.98,facing:1});
+  }
+
+  if(t.hitFlash>0){
+    ctx.strokeStyle="rgba(255,255,255,.9)";ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(x,y,29,0,Math.PI*2);ctx.stroke();
+  }
+
+  const hp=Math.max(0,t.hp/t.maxHp);
+  roundedRect(x-22,y-42,44,7,4,"rgba(4,7,12,.88)");
+  roundedRect(x-20,y-40,40*hp,3,2,hp>.55?"#58c77a":hp>.25?"#efbb4e":"#d34e4e");
+
+  // persistent friendly chevron above the position
+  ctx.fillStyle=friendlyColor;
+  ctx.beginPath();ctx.moveTo(x,y-51);ctx.lineTo(x-6,y-58);ctx.lineTo(x+6,y-58);ctx.closePath();ctx.fill();
+}
+function drawInfantry(e){
+  const x=e.x,y=e.y,flash=e.hitFlash>0;
+  drawTacticalBase(x,y,20,"#ef584e",true);
+  drawSoldierModel(x,y,e.color,{scale:1.12,facing:(e.faceX||1)>=0?1:-1,flash,elite:false});
+
+  // enemy marker
+  ctx.fillStyle="rgba(239,88,78,.95)";
+  ctx.beginPath();ctx.moveTo(x,y-34);ctx.lineTo(x-5,y-41);ctx.lineTo(x+5,y-41);ctx.closePath();ctx.fill();
+
+  if(e.muzzle>0){
+    const fx=e.faceX||1,fy=e.faceY||0,mx=x+fx*29,my=y-7+fy*14;
+    const g=ctx.createRadialGradient(mx,my,0,mx,my,10);
+    g.addColorStop(0,"#fff7c4");g.addColorStop(.35,"#ffd35d");g.addColorStop(1,"rgba(255,130,70,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(mx,my,10,0,Math.PI*2);ctx.fill();
+  }
+}
+function drawCavalry(e){
+  const x=e.x,y=e.y,flash=e.hitFlash>0;
+  drawTacticalBase(x,y,27,"#ef584e",true);
+  drawHorseModel(x,y-2,"#745039",1.14);
+  drawSoldierModel(x+1,y-15,e.color,{scale:1.02,facing:(e.faceX||1)>=0?1:-1,flash});
+
+  ctx.fillStyle="rgba(239,88,78,.95)";
+  ctx.beginPath();ctx.moveTo(x,y-42);ctx.lineTo(x-6,y-50);ctx.lineTo(x+6,y-50);ctx.closePath();ctx.fill();
+
+  if(e.muzzle>0){
+    const fx=e.faceX||1,fy=e.faceY||0,mx=x+fx*34,my=y-14+fy*15;
+    const g=ctx.createRadialGradient(mx,my,0,mx,my,11);
+    g.addColorStop(0,"#fff7c4");g.addColorStop(.35,"#ffd35d");g.addColorStop(1,"rgba(255,130,70,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(mx,my,11,0,Math.PI*2);ctx.fill();
+  }
+}
+function drawBoss(e){
+  const x=e.x,y=e.y,flash=e.hitFlash>0;
+  drawTacticalBase(x,y,e.kind==="cavalry"?36:31,"#ff5d55",true);
+
+  if(e.kind==="cavalry"){
+    drawHorseModel(x,y-2,"#62442f",1.38);
+    drawSoldierModel(x+2,y-20,e.color,{scale:1.24,facing:(e.faceX||1)>=0?1:-1,flash,elite:true});
+  }else{
+    drawSoldierModel(x,y,e.color,{scale:1.42,facing:(e.faceX||1)>=0?1:-1,flash,elite:true});
+  }
+
+  if(e.muzzle>0){
+    const fx=e.faceX||1,fy=e.faceY||0,mx=x+fx*40,my=y-12+fy*18;
+    const g=ctx.createRadialGradient(mx,my,0,mx,my,14);
+    g.addColorStop(0,"#fff7c4");g.addColorStop(.28,"#ffd35d");g.addColorStop(1,"rgba(255,100,60,0)");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);ctx.fill();
+  }
+
+  roundedRect(x-34,y-55,68,10,5,"rgba(5,9,15,.92)");
+  roundedRect(x-31,y-52,62*Math.max(0,e.hp/e.maxHp),4,3,"#e45752");
+  roundedRect(x-23,y-68,46,16,7,"rgba(13,20,32,.92)");
+  ctx.fillStyle="#fff";ctx.font="800 10px Inter, sans-serif";ctx.textAlign="center";
+  ctx.fillText("BOSS",x,y-57);
+}
+function drawEnemy(e){
+  if(e.isBoss){ drawBoss(e); return; }
+  if(e.kind==="cavalry") drawCavalry(e); else drawInfantry(e);
+  const hp=Math.max(0,e.hp/e.maxHp);
+  const yOff=e.kind==="cavalry"?-58:-49;
+  roundedRect(e.x-19,e.y+yOff,38,7,4,"rgba(5,9,15,.9)");
+  roundedRect(e.x-17,e.y+yOff+2,34*hp,3,2,hp>.5?"#57c57a":hp>.25?"#f0bd4d":"#d35a52");
+}
+
+function drawShots(){
+  shots.forEach(s=>{
+    const player=s.side!=="enemy";
+    const x2=(s.x+s.tx)/2,y2=(s.y+s.ty)/2;
+    const g=ctx.createLinearGradient(s.x,s.y,x2,y2);
+    g.addColorStop(0,player?"rgba(255,240,165,.95)":"rgba(255,155,120,.95)");
+    g.addColorStop(1,player?"rgba(255,240,165,.05)":"rgba(255,155,120,.05)");
+    ctx.strokeStyle=g;ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(s.x,s.y);ctx.lineTo(x2,y2);ctx.stroke();
+  });
+}
+
+function drawParticles(){
+  particles.forEach(p=>{
+    ctx.globalAlpha = Math.max(0,p.life/.38);
+    roundedRect(p.x,p.y,p.size,p.size,2,p.color);
+    ctx.globalAlpha = 1;
+  });
+}
+function drawSmoke(){
+  smoke.forEach(s=>{
+    ctx.globalAlpha = Math.max(0,s.life/.42)*.55;
+    roundedRect(s.x,s.y,Math.round(s.size),Math.round(s.size),2,"#d8d4ca");
+    ctx.globalAlpha = 1;
+  });
+}
+function drawMapHud(){
+  if(!faction || !currentMission) return;
+  roundedRect(14,14,220,34,8,"rgba(10,13,20,.60)");
+  ctx.fillStyle="#fff";
+  ctx.font="bold 12px Verdana";
+  ctx.textAlign="left";
+  ctx.fillText(`${faction.name} • ${currentMission.name}`, 24, 36);
+}
+
+function draw(){
+  drawTerrain();
+  drawPlacementPreview();
+  towers.forEach(drawTower);
+  enemies.forEach(drawEnemy);
+  drawShots();
+  drawParticles();
+  drawSmoke();
+  drawMapHud();
+}
+
+function loop(now){
+  const dt = Math.min(.035, (now-last)/1000);
+  last = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+resetCore();
+updateIntel();
+requestAnimationFrame(loop);
+
+/* ===== ShadowDog review add-on: campaign autosave + Continue ===== */
+try{(function(){
+  var KEY='frontier1846_v1';
+  function save(){try{if(factionKey)localStorage.setItem(KEY,JSON.stringify({f:factionKey,m:currentMissionIndex,k:kills}));}catch(e){}}
+  function clr(){try{localStorage.removeItem(KEY);}catch(e){}}
+  function read(){try{return JSON.parse(localStorage.getItem(KEY)||'null');}catch(e){return null;}}
+  var _prep=prepareMission; prepareMission=function(i){_prep(i);save();};
+  var _vic=showCampaignVictory; showCampaignVictory=function(){clr();_vic();};
+  if(ui&&ui.restartBtn) ui.restartBtn.addEventListener('click',clr);
+  function resume(s){
+    var m=Math.max(0,Math.min(s.m||0,MISSIONS.length-1));
+    chooseFaction(s.f);
+    currentMissionIndex=m;
+    if(typeof s.k==='number')kills=s.k;
+    prepareMission(currentMissionIndex);
+  }
+  var s=read();
+  if(s&&FACTIONS[s.f]){
+    var card=document.querySelector('#factionOverlay .overlayCard');
+    var facs=card&&card.querySelector('.factions');
+    if(card&&facs){
+      var b=document.createElement('button');
+      b.type='button'; b.className='green'; b.style.cssText='width:100%;margin-top:10px';
+      b.textContent='↻ Continue — '+FACTIONS[s.f].name+', Mission '+((s.m||0)+1);
+      b.addEventListener('click',function(){resume(s);});
+      facs.parentNode.insertBefore(b,facs.nextSibling);
+    }
+  }
+})();}catch(e){}
+
+})();
+</script>
+</body>
+</html>
