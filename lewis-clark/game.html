@@ -186,6 +186,7 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#5b7e85
         <button class="btn" id="pauseBtn" type="button">Pause</button>
         <button class="btn" id="saveBtn" type="button">Save</button>
         <button class="btn" id="sfxBtn" type="button">SFX: On</button>
+        <button class="btn" id="musicBtn" type="button">Music: On</button>
       </div>
     </section>
 
@@ -224,8 +225,9 @@ canvas{display:block;width:100%;height:auto;aspect-ratio:16/9;background:#5b7e85
     </aside>
   </div>
 </section>
-<footer class="footer"><span>Historical milestones grounded in National Park Service Lewis & Clark National Historic Trail material.</span><span>No background music • SFX only • autosave • GitHub Pages ready</span></footer>
+<footer class="footer"><span>Historical milestones grounded in National Park Service Lewis & Clark National Historic Trail material.</span><span>The Tavern Ballad soundtrack • SFX • autosave • GitHub Pages ready</span></footer>
 </main>
+<audio id="musicTrack" src="assets/the-tavern-ballad.mp3" loop preload="auto"></audio>
 
 <script>
 (() => {
@@ -242,7 +244,7 @@ const ui={
  decisionOverlay:$("decisionOverlay"),southChoice:$("southChoice"),northChoice:$("northChoice"),
  portageIntroOverlay:$("portageIntroOverlay"),portageStartBtn:$("portageStartBtn"),
  endOverlay:$("endOverlay"),endTitle:$("endTitle"),endText:$("endText"),restartBtn:$("restartBtn"),
- abilityBtn:$("abilityBtn"),prevBtn:$("prevBtn"),nextBtn:$("nextBtn"),pauseBtn:$("pauseBtn"),saveBtn:$("saveBtn"),sfxBtn:$("sfxBtn"),
+ abilityBtn:$("abilityBtn"),prevBtn:$("prevBtn"),nextBtn:$("nextBtn"),pauseBtn:$("pauseBtn"),saveBtn:$("saveBtn"),sfxBtn:$("sfxBtn"),musicBtn:$("musicBtn"),musicTrack:$("musicTrack"),
  portrait:$("portrait"),portraitBadge:$("portraitBadge"),memberName:$("memberName"),memberRole:$("memberRole"),abilityText:$("abilityText"),abilityFill:$("abilityFill"),partyList:$("partyList"),
  conditionsTitle:$("conditionsTitle"),condition1Label:$("condition1Label"),condition2Label:$("condition2Label"),condition3Label:$("condition3Label"),
  currentRead:$("currentRead"),weatherRead:$("weatherRead"),landmarkRead:$("landmarkRead"),padRead:$("padRead"),
@@ -252,10 +254,11 @@ const ui={
 
 const W=canvas.width,H=canvas.height,HORIZON=122,BOAT_Y=610,LOOK=1700;
 const keys={},gamepadEdges={};
-let last=performance.now(),time=0,running=false,paused=false,ended=false,sfxOn=true,audioCtx=null,sfxGain=null;
+let last=performance.now(),time=0,running=false,paused=false,ended=false,sfxOn=true,musicOn=true,audioCtx=null,sfxGain=null;
 let mode="river",act=1,progress=0,activeMember=0,abilityCooldown=0,abilityActive=0;
 let hazards=[],discoveries=[],particles=[],rain=[],logLines=[],boss=null,nextBoss=0,lastLandmark=-1,bannerTimer=0,lightning=0,stormIntensity=0;
 let decisionResolved=false,wrongForkPenalty=0;
+let damageFlash=0,lastDamage=0,damageCooldown=0,healthGhost=100;
 let boat={offset:0,vx:0,health:100,food:100,morale:100,score:0};
 let portage={x:0,vx:0,progress:0,stamina:100,rig:100,morale:100,stage:1,obstacles:[],spawnTimer:0,boost:false};
 const SAVE_KEY="corps-discovery-westward-v3";
@@ -397,6 +400,18 @@ function noise(dur=.08,gain=.04){
 function hitSfx(){noise(.08,.05);tone(100,.07,.03,"triangle")}
 function discoverSfx(){tone(460,.07,.035);setTimeout(()=>tone(690,.11,.035),70)}
 function bossSfx(){tone(170,.16,.045,"sawtooth");setTimeout(()=>tone(125,.2,.04,"triangle"),120)}
+function playMusic(reset=false){
+  if(!musicOn||!ui.musicTrack)return;
+  try{
+    ui.musicTrack.muted=false;
+    ui.musicTrack.volume=.72;
+    if(reset)ui.musicTrack.currentTime=0;
+    const p=ui.musicTrack.play();
+    if(p&&p.catch)p.catch(()=>{ui.status.textContent="Expedition running. Press Music: On once if your browser blocked the soundtrack.";});
+  }catch(e){console.warn("Music unavailable:",e)}
+}
+function pauseMusic(){try{ui.musicTrack&&ui.musicTrack.pause()}catch(e){}}
+
 
 /* ---------- PARTY / UI ---------- */
 function buildParty(){
@@ -444,7 +459,7 @@ function updateUI(){
 /* ---------- GAME START / ACT TRANSITIONS ---------- */
 function resetCampaign(clearExisting=true){
   act=1;mode="river";progress=0;activeMember=0;abilityCooldown=0;abilityActive=0;decisionResolved=false;wrongForkPenalty=0;
-  boat={offset:0,vx:0,health:100,food:100,morale:100,score:0};portage={x:0,vx:0,progress:0,stamina:100,rig:100,morale:100,stage:1,obstacles:[],spawnTimer:0,boost:false};
+  boat={offset:0,vx:0,health:100,food:100,morale:100,score:0};damageFlash=0;lastDamage=0;damageCooldown=0;healthGhost=100;portage={x:0,vx:0,progress:0,stamina:100,rig:100,morale:100,stage:1,obstacles:[],spawnTimer:0,boost:false};
   logLines=[];if(clearExisting)clearSave();delete ui.intermissionBtn.dataset.finish;initializeAct(true)
 }
 function initializeAct(resetResources=false){
@@ -457,7 +472,7 @@ function initializeAct(resetResources=false){
   generateWorld();updateMilestones(true);updateUI();buildParty();ui.modeTag.textContent="River Expedition"
 }
 function startNew(){
-  ensureAudio();resetCampaign(true);ui.startOverlay.classList.add("hidden");running=true;paused=false;ended=false;
+  ensureAudio();playMusic(true);resetCampaign(true);ui.startOverlay.classList.add("hidden");running=true;paused=false;ended=false;
   addLog("May 14, 1804 — the Corps moves up the Missouri from Camp River Dubois.");
   ui.status.textContent="Keep the expedition in the main channel and watch the water ahead.";saveGame(false);tone(320,.06,.03);setTimeout(()=>tone(470,.09,.03),70)
 }
@@ -481,7 +496,7 @@ function setupPortage(reset=true){
   ui.route.textContent="Great Falls Portage • June–July 1805";setJournal("The Portage","Five falls and an 18-mile carry force the Corps onto the prairie.");updateUI()
 }
 function campaignComplete(){
-  running=false;ended=true;mode="complete";clearSave();ui.endOverlay.classList.remove("hidden");
+  running=false;pauseMusic();ended=true;mode="complete";clearSave();ui.endOverlay.classList.remove("hidden");
   ui.endTitle.textContent="Beyond the Great Falls";
   ui.endText.textContent=`You completed the two-act Expedition Edition with ${Math.round(boat.food)}% food, ${Math.round(portage.rig)}% portage rig condition, ${Math.round(portage.morale)}% morale, and ${boat.score} discovery points. On July 15, 1805, the Corps resumed its journey up the Missouri after the Great Falls portage.`;
   discoverSfx()
@@ -555,7 +570,13 @@ function gamepad(){
   if(edge(2))useAbility();if(edge(4))switchRelative(-1);if(edge(5))switchRelative(1);if(edge(9))togglePause();
   return{x:dead(p.axes[0]||0),y:dead(p.axes[1]||0)}
 }
-function togglePause(){if(!running)return;paused=!paused;ui.pauseBtn.textContent=paused?"Resume":"Pause";ui.status.textContent=paused?"Expedition paused.":"Expedition resumed."}
+function togglePause(){
+  if(!running)return;
+  paused=!paused;
+  ui.pauseBtn.textContent=paused?"Resume":"Pause";
+  ui.status.textContent=paused?"Expedition paused.":"Expedition resumed.";
+  if(paused)pauseMusic();else playMusic(false);
+}
 
 /* ---------- ABILITIES ---------- */
 function useAbility(){
@@ -590,9 +611,30 @@ function bossUpdate(dt){
   if(boss.time<=0){boat.score+=boss.reward;boat.morale=clamp(boat.morale+6,0,100);addLog(`${boss.name} overcome. +${boss.reward} discovery score.`);ui.status.textContent=`${boss.name} overcome.`;discoverSfx();boss=null;stormIntensity=0}
 }
 function damage(amount,msg){
-  const york=activeMember===1&&abilityActive>0,dmg=amount*(york?.35:1);
-  boat.health=clamp(boat.health-dmg,0,100);boat.morale=clamp(boat.morale-dmg*.16,0,100);ui.status.textContent=msg;hitSfx();
-  for(let i=0;i<14;i++)particles.push({x:boatScreenX()+Math.random()*20-10,y:BOAT_Y+Math.random()*10-5,vx:(Math.random()-.5)*70,vy:-20-Math.random()*50,life:.6,size:2+Math.random()*4,color:"#ead7ad"})
+  if(damageCooldown>0)return;
+  const york=activeMember===1&&abilityActive>0;
+  const dmg=amount*(york?.35:1);
+  const before=boat.health;
+  boat.health=clamp(boat.health-dmg,0,100);
+  boat.morale=clamp(boat.morale-dmg*.16,0,100);
+
+  lastDamage=Math.max(1,Math.round(before-boat.health));
+  damageFlash=.95;
+  damageCooldown=.58;
+  healthGhost=before;
+
+  ui.status.textContent=`${msg}  Hull -${lastDamage}`;
+  hitSfx();
+
+  for(let i=0;i<18;i++)particles.push({
+    x:boatScreenX()+Math.random()*28-14,
+    y:BOAT_Y+Math.random()*12-6,
+    vx:(Math.random()-.5)*95,
+    vy:-25-Math.random()*65,
+    life:.72,
+    size:2+Math.random()*4,
+    color:i%3===0?"#f0d7aa":"#d7edf2"
+  })
 }
 function updateRiver(dt,pad){
   const lr=clamp(((keys["d"]||keys["arrowright"])?1:0)-((keys["a"]||keys["arrowleft"])?1:0)+pad.x,-1,1);
@@ -638,7 +680,14 @@ function portageHit(o){
   if(o.kind==="snake"){morD=7;staD=5;ui.status.textContent="A rattlesnake forces the crew off line."}
   if(o.kind==="hail"){rigD=5;staD=10;morD=6;ui.status.textContent="A violent hail squall pounds the portage party."}
   if(activeMember===1&&abilityActive>0){rigD*=.35;staD*=.45}
-  portage.rig=clamp(portage.rig-rigD,0,100);portage.stamina=clamp(portage.stamina-staD,0,100);portage.morale=clamp(portage.morale-morD,0,100);hitSfx()
+  const rigBefore=portage.rig;
+  portage.rig=clamp(portage.rig-rigD,0,100);portage.stamina=clamp(portage.stamina-staD,0,100);portage.morale=clamp(portage.morale-morD,0,100);
+  if(rigD>0){
+    lastDamage=Math.max(1,Math.round(rigBefore-portage.rig));
+    damageFlash=.95;
+    healthGhost=rigBefore;
+  }
+  hitSfx()
 }
 function updatePortage(dt,pad){
   const lr=clamp(((keys["d"]||keys["arrowright"])?1:0)-((keys["a"]||keys["arrowleft"])?1:0)+pad.x,-1,1);
@@ -671,7 +720,7 @@ function updatePortage(dt,pad){
 /* ---------- MAIN UPDATE ---------- */
 function update(dt){
   if(!running||paused||ended)return;
-  time+=dt;if(bannerTimer>0){bannerTimer-=dt;if(bannerTimer<=0)ui.banner.classList.remove("show")}if(lightning>0)lightning-=dt;
+  time+=dt;if(bannerTimer>0){bannerTimer-=dt;if(bannerTimer<=0)ui.banner.classList.remove("show")}if(lightning>0)lightning-=dt;if(damageFlash>0)damageFlash=Math.max(0,damageFlash-dt);if(damageCooldown>0)damageCooldown=Math.max(0,damageCooldown-dt);
   if(abilityCooldown>0)abilityCooldown=Math.max(0,abilityCooldown-dt);if(abilityActive>0)abilityActive=Math.max(0,abilityActive-dt);
   const pad=gamepad();
   if(mode==="river")updateRiver(dt,pad);else if(mode==="portage")updatePortage(dt,pad);
@@ -679,17 +728,33 @@ function update(dt){
   rain.forEach(r=>{r.x-=180*dt;r.y+=r.speed*dt});rain=rain.filter(r=>r.y<H+40);
   if(!boss||boss.type!=="storm")stormIntensity=Math.max(0,stormIntensity-dt*.6);
   if(mode==="river"&&(boat.health<=0||boat.morale<=0)){
-    running=false;ended=true;ui.endOverlay.classList.remove("hidden");ui.endTitle.textContent="Expedition Halted";ui.endText.textContent="The Corps can no longer continue. Restart and use the expedition members' abilities more strategically."
+    running=false;ended=true;pauseMusic();ui.endOverlay.classList.remove("hidden");ui.endTitle.textContent="Expedition Halted";ui.endText.textContent="The Corps can no longer continue. Restart and use the expedition members' abilities more strategically."
   }
   updateUI()
 }
 
 /* ---------- RIVER PROJECTION / GRAPHICS ---------- */
 function project(worldX,worldY){
-  const d=worldY-progress;if(d<-120||d>LOOK)return null;
-  const t=clamp(d/LOOK,0,1),p=Math.pow(t,.60),y=BOAT_Y-p*(BOAT_Y-HORIZON),scale=lerp(1.38,.28,p);
-  const futureBend=(riverCenter(worldY)-riverCenter(progress))*.43*scale,x=W/2+futureBend+(worldX-riverCenter(worldY))*scale;
-  return{x,y,scale,t}
+  const d=worldY-progress;
+  if(d<-650||d>LOOK)return null;
+
+  const raw=d/LOOK;
+  const far=clamp(raw,0,1);
+  const curve=raw>=0?Math.pow(far,.62):raw*.65;
+  const y=BOAT_Y-curve*(BOAT_Y-HORIZON);
+
+  const perspective=Math.pow(far,.62);
+  let scale=lerp(1.48,.28,perspective);
+  if(raw<0)scale*=1+(-raw)*.38;
+
+  // One continuous river centerline. This removes the near-field kink
+  // caused by drawing the lower river with a different geometry.
+  const bend=riverCenter(worldY)-riverCenter(progress);
+  const centerX=W/2+bend*(.34+.10*far)*scale;
+  const localX=worldX-riverCenter(worldY);
+  const x=centerX+localX*scale;
+
+  return{x,y,scale,t:far,d};
 }
 function boatScreenX(){return W/2+boat.offset*1.14}
 function drawSky(){
@@ -705,15 +770,82 @@ function drawSky(){
   ctx.fillStyle=act2?"rgba(82,79,60,.56)":"rgba(56,78,67,.58)";ctx.beginPath();ctx.moveTo(0,HORIZON+46);for(let x=0;x<=W;x+=55)ctx.lineTo(x,HORIZON+18+Math.sin(x*.017+1)*16);ctx.lineTo(W,HORIZON+130);ctx.lineTo(0,HORIZON+130);ctx.closePath();ctx.fill()
 }
 function drawRiver(){
-  const land=ctx.createLinearGradient(0,HORIZON,0,H);land.addColorStop(0,act===2?"#8b8b62":"#718a5f");land.addColorStop(.6,act===2?"#777b52":"#5f784f");land.addColorStop(1,act===2?"#5c6742":"#49643f");ctx.fillStyle=land;ctx.fillRect(0,HORIZON,W,H-HORIZON);
+  const land=ctx.createLinearGradient(0,HORIZON,0,H);
+  land.addColorStop(0,act===2?"#8d8c63":"#728b60");
+  land.addColorStop(.62,act===2?"#777b52":"#607a50");
+  land.addColorStop(1,act===2?"#5b6541":"#49633f");
+  ctx.fillStyle=land;ctx.fillRect(0,HORIZON,W,H-HORIZON);
+
   const left=[],right=[];
-  for(let d=LOOK;d>=-110;d-=22){const wy=progress+d,c=riverCenter(wy),w=riverWidth(wy),pl=project(c-w/2,wy),pr=project(c+w/2,wy);if(pl&&pr){left.push(pl);right.push(pr)}}
-  const water=ctx.createLinearGradient(0,HORIZON,0,H);water.addColorStop(0,act===2?"#7099a1":"#6d97a0");water.addColorStop(.35,act===2?"#628a94":"#5b8a95");water.addColorStop(.72,"#3f7281");water.addColorStop(1,"#284e60");
-  ctx.fillStyle=water;ctx.beginPath();ctx.moveTo(left[0].x,left[0].y);left.forEach(p=>ctx.lineTo(p.x,p.y));
-  const foregroundHalf=riverWidth(progress)*.62,bottomLeftX=W/2-foregroundHalf,bottomRightX=W/2+foregroundHalf;ctx.lineTo(bottomLeftX,H);ctx.lineTo(bottomRightX,H);for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i].x,right[i].y);ctx.closePath();ctx.fill();
-  ctx.strokeStyle="rgba(231,218,175,.48)";ctx.lineWidth=4.5;ctx.beginPath();left.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineTo(bottomLeftX,H);ctx.stroke();ctx.beginPath();right.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.lineTo(bottomRightX,H);ctx.stroke();
-  for(let i=0;i<32;i++){const d=((i*73+time*54)%LOOK),wy=progress+d,c=riverCenter(wy),w=riverWidth(wy),off=(hash(i*91)-.5)*w*.60,p1=project(c+off-42,wy),p2=project(c+off+42,wy);if(p1&&p2){ctx.strokeStyle=`rgba(230,245,246,${.06+p1.scale*.11})`;ctx.lineWidth=Math.max(1,p1.scale*2.2);ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.quadraticCurveTo((p1.x+p2.x)/2,p1.y-3*p1.scale,p2.x,p2.y);ctx.stroke()}}
-  for(let i=0;i<9;i++){const y=H-18-i*22,width=260+i*38;ctx.strokeStyle=`rgba(214,234,239,${.035+i*.006})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(W/2-width,y);ctx.quadraticCurveTo(W/2,y-8,W/2+width,y);ctx.stroke()}
+  for(let d=LOOK;d>=-620;d-=22){
+    const wy=progress+d,c=riverCenter(wy),w=riverWidth(wy);
+    const pl=project(c-w/2,wy),pr=project(c+w/2,wy);
+    if(pl&&pr){left.push(pl);right.push(pr)}
+  }
+  if(left.length<2||right.length<2)return;
+
+  // subtle muddy shelves behind the water
+  ctx.fillStyle="rgba(164,136,91,.22)";
+  ctx.beginPath();
+  left.forEach((p,i)=>i?ctx.lineTo(p.x-14*p.scale,p.y):ctx.moveTo(p.x-14*p.scale,p.y));
+  for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i].x+14*right[i].scale,right[i].y);
+  ctx.closePath();ctx.fill();
+
+  const water=ctx.createLinearGradient(0,HORIZON,0,H);
+  water.addColorStop(0,act===2?"#719da5":"#719ca5");
+  water.addColorStop(.36,act===2?"#5d8b96":"#5d8b96");
+  water.addColorStop(.72,"#3d7180");
+  water.addColorStop(1,"#254d5e");
+  ctx.fillStyle=water;
+  ctx.beginPath();
+  left.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
+  for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i].x,right[i].y);
+  ctx.closePath();ctx.fill();
+
+  // continuous banks — no separate bottom wedge, so no crooked kink.
+  ctx.strokeStyle="rgba(234,219,177,.48)";ctx.lineWidth=4;
+  ctx.beginPath();left.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+  ctx.beginPath();right.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.stroke();
+
+  ctx.strokeStyle="rgba(37,52,39,.22)";ctx.lineWidth=12;
+  ctx.beginPath();left.forEach((p,i)=>i?ctx.lineTo(p.x-5*p.scale,p.y):ctx.moveTo(p.x-5*p.scale,p.y));ctx.stroke();
+  ctx.beginPath();right.forEach((p,i)=>i?ctx.lineTo(p.x+5*p.scale,p.y):ctx.moveTo(p.x+5*p.scale,p.y));ctx.stroke();
+
+  // Streamlines follow the actual centerline and move toward the player.
+  const offsets=[-.34,-.22,-.10,.10,.22,.34];
+  ctx.save();
+  ctx.lineCap="round";
+  for(let j=0;j<offsets.length;j++){
+    const frac=offsets[j];
+    ctx.beginPath();
+    let started=false;
+    for(let d=LOOK;d>=-300;d-=34){
+      const wy=progress+d,c=riverCenter(wy),w=riverWidth(wy);
+      const p=project(c+w*frac,wy);
+      if(!p)continue;
+      if(!started){ctx.moveTo(p.x,p.y);started=true}else ctx.lineTo(p.x,p.y)
+    }
+    ctx.strokeStyle=`rgba(226,242,245,${.075+(j%2)*.018})`;
+    ctx.lineWidth=1.4;
+    ctx.setLineDash([12,20]);
+    ctx.lineDashOffset=-(time*(32+(j%3)*7));
+    ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Near-field ripples also follow the current center rather than the screen.
+  for(let d=260;d>=-260;d-=95){
+    const wy=progress+d,c=riverCenter(wy),w=riverWidth(wy),p=project(c,wy);
+    if(!p)continue;
+    const half=w*.25*p.scale;
+    ctx.strokeStyle=`rgba(230,244,245,${.045+p.scale*.025})`;
+    ctx.lineWidth=1.5;
+    ctx.beginPath();
+    ctx.moveTo(p.x-half,p.y);
+    ctx.quadraticCurveTo(p.x,p.y-4*p.scale,p.x+half,p.y);
+    ctx.stroke();
+  }
+  ctx.restore()
 }
 function drawBankLife(){
   const start=Math.floor(progress/90)-3,end=start+26;
@@ -732,35 +864,189 @@ function drawHazard(h){
   else{const g=ctx.createLinearGradient(p.x,p.y-8*s,p.x,p.y+12*s);g.addColorStop(0,"rgba(221,205,151,.85)");g.addColorStop(1,"rgba(174,154,103,.70)");ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(p.x,p.y,38*s,11*s,0,0,Math.PI*2);ctx.fill()}
   if(h.revealed||activeMember===2&&abilityActive>0){ctx.strokeStyle="rgba(235,91,77,.9)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,28*s+8,0,Math.PI*2);ctx.stroke()}
 }
-function drawDiscovery(d){
-  if(d.taken)return;const visible=d.revealed||activeMember===2&&abilityActive>0||activeMember===3&&abilityActive>0;if(!visible)return;const p=project(d.x,d.y);if(!p)return;const pulse=1+Math.sin(time*4+d.y)*.12,glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,28*p.scale+10);glow.addColorStop(0,"rgba(255,223,112,.35)");glow.addColorStop(1,"rgba(255,223,112,0)");ctx.fillStyle=glow;ctx.beginPath();ctx.arc(p.x,p.y,28*p.scale+10,0,Math.PI*2);ctx.fill();ctx.strokeStyle="rgba(241,207,104,.95)";ctx.lineWidth=2;ctx.beginPath();ctx.arc(p.x,p.y,15*p.scale*pulse+6,0,Math.PI*2);ctx.stroke();ctx.fillStyle="#efd16e";ctx.beginPath();ctx.arc(p.x,p.y,5*p.scale+2.5,0,Math.PI*2);ctx.fill()
-}
-function drawKeelboat(x,y,scale=1){
-  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle="rgba(0,0,0,.26)";ctx.beginPath();ctx.ellipse(0,30,58,15,0,0,Math.PI*2);ctx.fill();
-  const hull=ctx.createLinearGradient(-60,-12,60,24);hull.addColorStop(0,"#cc9456");hull.addColorStop(.45,"#98663a");hull.addColorStop(1,"#5e3d29");ctx.fillStyle=hull;ctx.beginPath();ctx.moveTo(-62,-8);ctx.quadraticCurveTo(-46,32,0,37);ctx.quadraticCurveTo(46,32,63,-8);ctx.lineTo(40,-20);ctx.lineTo(-40,-20);ctx.closePath();ctx.fill();ctx.strokeStyle="#e2b77c";ctx.lineWidth=2;ctx.stroke();
-  rr(-26,-40,52,25,7,"#d5b17e");rr(-19,-34,38,16,4,"#efe1c0");rr(-45,-15,15,18,3,"#745335");rr(31,-15,14,18,3,"#7a5838");
-  ctx.strokeStyle="#4d3828";ctx.lineWidth=3.2;ctx.beginPath();ctx.moveTo(4,-40);ctx.lineTo(4,-80);ctx.stroke();ctx.fillStyle="#d7b65d";ctx.beginPath();ctx.moveTo(6,-77);ctx.lineTo(36,-69);ctx.lineTo(6,-59);ctx.closePath();ctx.fill();
-  const crew=[MEMBERS[0].color,MEMBERS[1].color,MEMBERS[2].color,isMemberUnlocked(MEMBERS[3])?MEMBERS[3].color:"#7d6a55"];[-34,-12,12,34].forEach((cx,i)=>{ctx.fillStyle=crew[i];ctx.beginPath();ctx.arc(cx,-12,6.4,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c99b6c";ctx.beginPath();ctx.arc(cx,-20,4.3,0,Math.PI*2);ctx.fill()});
+function drawDiscoveryIcon(name,x,y,s){
+  ctx.save();ctx.translate(x,y);ctx.scale(s,s);
+  ctx.strokeStyle="#fff1a0";ctx.fillStyle="#efd16e";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";
+
+  if(name.includes("Botanical")){
+    ctx.beginPath();ctx.ellipse(0,-2,8,13,-.45,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-5,8);ctx.lineTo(7,-12);ctx.stroke();
+  }else if(name.includes("Bird")){
+    ctx.beginPath();ctx.moveTo(-13,2);ctx.quadraticCurveTo(-3,-10,2,1);ctx.quadraticCurveTo(8,-9,14,0);ctx.stroke();
+  }else if(name.includes("Tracks")){
+    [-6,6].forEach(dx=>{ctx.beginPath();ctx.ellipse(dx,2,4,6,0,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(dx-3,-5,1.5,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(dx+2,-6,1.5,0,Math.PI*2);ctx.stroke()});
+  }else if(name.includes("Bluff")||name.includes("Cliffs")){
+    ctx.beginPath();ctx.moveTo(-13,10);ctx.lineTo(-4,-9);ctx.lineTo(3,1);ctx.lineTo(9,-13);ctx.lineTo(14,10);ctx.stroke();
+  }else if(name.includes("Prairie Dog")){
+    ctx.beginPath();ctx.arc(0,-1,8,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(-4,-9,3,0,Math.PI*2);ctx.arc(4,-9,3,0,Math.PI*2);ctx.stroke();
+  }else if(name.includes("Fossil")){
+    ctx.beginPath();ctx.arc(0,0,12,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0,7,0,Math.PI*1.7);ctx.stroke();
+    ctx.beginPath();ctx.arc(0,0,3,0,Math.PI*1.7);ctx.stroke();
+  }else if(name.includes("Pronghorn")){
+    ctx.beginPath();ctx.moveTo(-10,8);ctx.quadraticCurveTo(-7,-2,-4,-11);ctx.moveTo(10,8);ctx.quadraticCurveTo(7,-2,4,-11);ctx.stroke();
+    ctx.beginPath();ctx.arc(0,6,6,Math.PI,0);ctx.stroke();
+  }else if(name.includes("Confluence")){
+    ctx.beginPath();ctx.moveTo(0,13);ctx.lineTo(0,0);ctx.lineTo(-10,-11);ctx.moveTo(0,0);ctx.lineTo(10,-11);ctx.stroke();
+  }else if(name.includes("Bison")){
+    ctx.beginPath();ctx.arc(0,2,8,0,Math.PI*2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-7,-2);ctx.quadraticCurveTo(-14,-9,-16,-3);ctx.moveTo(7,-2);ctx.quadraticCurveTo(14,-9,16,-3);ctx.stroke();
+  }else if(name.includes("Mountain")){
+    ctx.beginPath();ctx.moveTo(-15,11);ctx.lineTo(-3,-9);ctx.lineTo(4,1);ctx.lineTo(10,-12);ctx.lineTo(16,11);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-6,-4);ctx.lineTo(-2,-1);ctx.lineTo(1,-5);ctx.moveTo(7,-6);ctx.lineTo(10,-3);ctx.stroke();
+  }else{
+    ctx.beginPath();ctx.moveTo(0,-12);ctx.lineTo(4,-3);ctx.lineTo(13,0);ctx.lineTo(4,3);ctx.lineTo(0,12);ctx.lineTo(-4,3);ctx.lineTo(-13,0);ctx.lineTo(-4,-3);ctx.closePath();ctx.stroke();
+  }
   ctx.restore()
 }
-function drawPirogue(x,y,scale,color="#9a623b"){
-  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle="rgba(0,0,0,.16)";ctx.beginPath();ctx.ellipse(0,13,30,8,0,0,Math.PI*2);ctx.fill();const hg=ctx.createLinearGradient(-32,-6,32,12);hg.addColorStop(0,color);hg.addColorStop(1,"#70482f");ctx.fillStyle=hg;ctx.beginPath();ctx.moveTo(-33,-4);ctx.quadraticCurveTo(-22,15,0,17);ctx.quadraticCurveTo(22,15,33,-4);ctx.lineTo(19,-10);ctx.lineTo(-19,-10);ctx.closePath();ctx.fill();for(const cx of [-10,9]){ctx.fillStyle="#6e7c55";ctx.beginPath();ctx.arc(cx,-4,4.5,0,Math.PI*2);ctx.fill();ctx.fillStyle="#c69a6b";ctx.beginPath();ctx.arc(cx,-11,3.3,0,Math.PI*2);ctx.fill()}ctx.restore()
+function drawDiscovery(d){
+  if(d.taken)return;
+  const visible=d.revealed||activeMember===2&&abilityActive>0||activeMember===3&&abilityActive>0;
+  if(!visible)return;
+  const p=project(d.x,d.y);if(!p)return;
+  const pulse=1+Math.sin(time*4+d.y)*.10;
+  const rad=24*p.scale+10;
+  const glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad);
+  glow.addColorStop(0,"rgba(255,222,102,.30)");
+  glow.addColorStop(1,"rgba(255,222,102,0)");
+  ctx.fillStyle=glow;ctx.beginPath();ctx.arc(p.x,p.y,rad,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle="rgba(15,24,32,.78)";
+  ctx.strokeStyle="rgba(246,210,100,.95)";
+  ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(p.x,p.y,(18*p.scale+8)*pulse,0,Math.PI*2);ctx.fill();ctx.stroke();
+
+  drawDiscoveryIcon(d.name,p.x,p.y,clamp(.55+p.scale*.52,.65,1.18));
+
+  if(p.scale>.72){
+    ctx.fillStyle="rgba(255,250,220,.92)";
+    ctx.font="700 9px Inter, sans-serif";ctx.textAlign="center";
+    ctx.fillText(d.name.toUpperCase(),p.x,p.y+29*p.scale+16)
+  }
 }
-function drawCanoe(x,y,scale,color="#785335"){
-  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.fillStyle="rgba(0,0,0,.13)";ctx.beginPath();ctx.ellipse(0,9,24,5,0,0,Math.PI*2);ctx.fill();ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(-28,-3);ctx.quadraticCurveTo(-16,10,0,11);ctx.quadraticCurveTo(16,10,28,-3);ctx.lineTo(15,-7);ctx.lineTo(-15,-7);ctx.closePath();ctx.fill();ctx.restore()
+function drawCrewFigure(x,y,color,scale=1){
+  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+  ctx.fillStyle=color;ctx.beginPath();ctx.ellipse(0,3,5,8,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#c99b6c";ctx.beginPath();ctx.arc(0,-6,3.6,0,Math.PI*2);ctx.fill();
+  ctx.restore()
 }
-function wake(wx,wy,spread,alpha=1){for(let i=0;i<4;i++){ctx.strokeStyle=`rgba(226,240,242,${(0.10-i*0.02)*alpha})`;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(wx-spread*.18,wy+8+i*7);ctx.quadraticCurveTo(wx,wy+18+i*7,wx+spread*.18,wy+8+i*7);ctx.stroke()}}
+function drawAnimatedOar(side,index,phase,scale=1){
+  const baseY=-18+index*16;
+  const stroke=Math.sin(phase+index*.82+side*.7);
+  const x=side*(30+index*1.5);
+  const angle=side*(.55+stroke*.22);
+  ctx.save();ctx.translate(x,baseY);ctx.rotate(angle);
+  ctx.strokeStyle="#71543a";ctx.lineWidth=2.4*scale;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(side*35*scale,18*scale);ctx.stroke();
+  ctx.fillStyle="#9d754a";ctx.beginPath();ctx.ellipse(side*38*scale,20*scale,7*scale,2.7*scale,angle,0,Math.PI*2);ctx.fill();
+  ctx.restore()
+}
+function drawKeelboat(x,y,scale=1){
+  const bob=Math.sin(time*4.1)*2.2;
+  const roll=clamp(boat.vx/650,-.055,.055)+Math.sin(time*2.1)*.008;
+  const oarPhase=time*4.8;
+
+  ctx.save();ctx.translate(x,y+bob);ctx.rotate(roll);ctx.scale(scale,scale);
+
+  // water shadow
+  ctx.fillStyle="rgba(0,0,0,.24)";ctx.beginPath();ctx.ellipse(0,35,68,18,0,0,Math.PI*2);ctx.fill();
+
+  // stern-to-bow chase-view hull
+  const hull=ctx.createLinearGradient(-45,30,40,-72);
+  hull.addColorStop(0,"#6e452a");hull.addColorStop(.48,"#9f6938");hull.addColorStop(1,"#c79152");
+  ctx.fillStyle=hull;
+  ctx.strokeStyle="#e0b47a";ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.moveTo(-56,28);
+  ctx.quadraticCurveTo(-48,-22,-23,-72);
+  ctx.quadraticCurveTo(0,-91,23,-72);
+  ctx.quadraticCurveTo(48,-22,56,28);
+  ctx.quadraticCurveTo(0,46,-56,28);
+  ctx.closePath();ctx.fill();ctx.stroke();
+
+  // dark inside deck
+  ctx.fillStyle="#4b3326";
+  ctx.beginPath();
+  ctx.moveTo(-40,21);ctx.quadraticCurveTo(-34,-22,-17,-60);
+  ctx.quadraticCurveTo(0,-72,17,-60);ctx.quadraticCurveTo(34,-22,40,21);
+  ctx.quadraticCurveTo(0,32,-40,21);ctx.closePath();ctx.fill();
+
+  // deck boards
+  ctx.strokeStyle="rgba(221,181,124,.30)";ctx.lineWidth=1;
+  for(let yy=13;yy>-48;yy-=12){const half=34-(13-yy)*.18;ctx.beginPath();ctx.moveTo(-half,yy);ctx.lineTo(half,yy);ctx.stroke()}
+
+  // cargo & central cabin box
+  rr(-18,-22,36,22,5,"#c9a16f");
+  rr(-13,-18,26,14,3,"#ead8b5");
+  rr(-31,5,15,16,3,"#7a5737");rr(17,4,14,17,3,"#765237");
+
+  // mast / flag
+  ctx.strokeStyle="#503929";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-28);ctx.lineTo(0,-84);ctx.stroke();
+  const flutter=Math.sin(time*7)*4;
+  ctx.fillStyle="#d8b65c";ctx.beginPath();ctx.moveTo(2,-81);ctx.quadraticCurveTo(18+flutter,-75,31,-68);ctx.quadraticCurveTo(18+flutter*.4,-61,2,-57);ctx.closePath();ctx.fill();
+
+  // crew
+  const crew=[MEMBERS[0].color,MEMBERS[1].color,MEMBERS[2].color,isMemberUnlocked(MEMBERS[3])?MEMBERS[3].color:"#7d6a55"];
+  const crewPos=[[-19,9],[18,9],[-13,-34],[13,-34]];
+  crewPos.forEach((p,i)=>drawCrewFigure(p[0],p[1]+Math.sin(time*4+i)*1.5,crew[i],.9));
+
+  // animated oars
+  for(let side of [-1,1])for(let i=0;i<4;i++)drawAnimatedOar(side,i,oarPhase,.92);
+
+  // bow gun / forward detail
+  ctx.strokeStyle="#61686b";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,-64);ctx.lineTo(0,-84);ctx.stroke();
+
+  ctx.restore()
+}
+function drawPirogue(x,y,scale,color="#9a623b",phase=0){
+  const bob=Math.sin(time*4.4+phase)*1.7;
+  ctx.save();ctx.translate(x,y+bob);ctx.scale(scale,scale);
+  ctx.fillStyle="rgba(0,0,0,.16)";ctx.beginPath();ctx.ellipse(0,14,31,8,0,0,Math.PI*2);ctx.fill();
+  const hg=ctx.createLinearGradient(-34,-7,34,13);hg.addColorStop(0,color);hg.addColorStop(1,"#68442d");
+  ctx.fillStyle=hg;ctx.strokeStyle="#d0a16b";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(-34,-4);ctx.quadraticCurveTo(-22,16,0,18);ctx.quadraticCurveTo(22,16,34,-4);ctx.lineTo(19,-10);ctx.lineTo(-19,-10);ctx.closePath();ctx.fill();ctx.stroke();
+  for(const cx of [-10,9])drawCrewFigure(cx,-3,"#6e7c55",.72);
+  const paddle=Math.sin(time*5+phase)*.22;
+  ctx.strokeStyle="#735236";ctx.lineWidth=2.2;ctx.save();ctx.rotate(paddle);ctx.beginPath();ctx.moveTo(-8,0);ctx.lineTo(-34,14);ctx.stroke();ctx.restore();
+  ctx.save();ctx.rotate(-paddle);ctx.beginPath();ctx.moveTo(8,0);ctx.lineTo(34,14);ctx.stroke();ctx.restore();
+  ctx.restore()
+}
+function drawCanoe(x,y,scale,color="#785335",phase=0){
+  const bob=Math.sin(time*4.8+phase)*1.3;
+  ctx.save();ctx.translate(x,y+bob);ctx.scale(scale,scale);
+  ctx.fillStyle="rgba(0,0,0,.13)";ctx.beginPath();ctx.ellipse(0,9,25,5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle=color;ctx.strokeStyle="#bd8d59";ctx.lineWidth=1.3;
+  ctx.beginPath();ctx.moveTo(-29,-3);ctx.quadraticCurveTo(-16,11,0,12);ctx.quadraticCurveTo(16,11,29,-3);ctx.lineTo(15,-7);ctx.lineTo(-15,-7);ctx.closePath();ctx.fill();ctx.stroke();
+  const paddle=Math.sin(time*5.2+phase)*.3;ctx.strokeStyle="#6c4e35";ctx.lineWidth=2;
+  ctx.save();ctx.rotate(paddle);ctx.beginPath();ctx.moveTo(-4,-2);ctx.lineTo(-27,14);ctx.stroke();ctx.restore();
+  ctx.restore()
+}
+function wake(wx,wy,spread,alpha=1,phase=0){
+  for(let i=0;i<5;i++){
+    const wobble=Math.sin(time*3+i+phase)*4;
+    ctx.strokeStyle=`rgba(230,244,246,${(0.12-i*.018)*alpha})`;
+    ctx.lineWidth=1.7;
+    ctx.beginPath();
+    ctx.moveTo(wx-spread*(.16+i*.025),wy+8+i*8);
+    ctx.quadraticCurveTo(wx+wobble,wy+19+i*9,wx+spread*(.16+i*.025),wy+8+i*8);
+    ctx.stroke()
+  }
+}
 function drawBoats(){
   const x=boatScreenX();
   if(act===1){
-    wake(x-88,BOAT_Y+26,82,.7);wake(x+91,BOAT_Y+31,78,.65);wake(x,BOAT_Y+36,120,1);
-    drawPirogue(x-88,BOAT_Y+20,.78,"#a4693f");drawPirogue(x+91,BOAT_Y+26,.74,"#9a623b");drawKeelboat(x,BOAT_Y,1)
+    wake(x,BOAT_Y+40,145,1,0);
+    wake(x-100,BOAT_Y+40,78,.55,1);
+    wake(x+102,BOAT_Y+43,76,.52,2);
+    drawPirogue(x-102,BOAT_Y+19,.76,"#a4693f",.7);
+    drawPirogue(x+104,BOAT_Y+25,.72,"#955d39",1.6);
+    drawKeelboat(x,BOAT_Y,1.06)
   }else{
-    // permanent party fleet after the keelboat returns downstream
-    wake(x-65,BOAT_Y+34,96,.9);wake(x+70,BOAT_Y+37,90,.85);
-    drawPirogue(x-65,BOAT_Y+22,.88,"#9e603a");drawPirogue(x+70,BOAT_Y+26,.84,"#8d5738");
-    const positions=[[-155,42],[-115,72],[-50,78],[35,80],[110,71],[157,43]];
-    positions.forEach((p,i)=>drawCanoe(x+p[0],BOAT_Y+p[1],.56+(i%2)*.04,i%2?"#725139":"#80583a"));
+    wake(x-70,BOAT_Y+39,96,.82,.5);wake(x+74,BOAT_Y+42,92,.80,1.4);
+    drawPirogue(x-70,BOAT_Y+20,.90,"#9e603a",.5);
+    drawPirogue(x+74,BOAT_Y+25,.86,"#8d5738",1.4);
+    const positions=[[-168,45],[-120,73],[-53,82],[40,83],[118,72],[170,44]];
+    positions.forEach((p,i)=>drawCanoe(x+p[0],BOAT_Y+p[1],.57+(i%2)*.035,i%2?"#725139":"#80583a",i*.8));
   }
 }
 function drawForegroundFrame(){
@@ -773,8 +1059,43 @@ function drawWeather(){
   if(lightning>0){ctx.fillStyle=`rgba(255,255,255,${lightning*2.5})`;ctx.fillRect(0,0,W,H)}
 }
 function drawBossUI(){if(!boss)return;rr(W/2-250,24,500,48,14,"rgba(6,12,20,.80)");ctx.fillStyle="#fff";ctx.font="800 12px Inter, sans-serif";ctx.textAlign="center";ctx.fillText(`ENVIRONMENTAL BOSS — ${boss.name}`,W/2,43);rr(W/2-215,55,430,7,4,"rgba(255,255,255,.12)");rr(W/2-215,55,430*(boss.time/boss.max),7,4,"#d76c60")}
-function drawRiverHud(){rr(18,18,230,42,12,"rgba(7,14,23,.52)");ctx.fillStyle="#fff";ctx.font="800 11px Inter, sans-serif";ctx.textAlign="left";ctx.fillText(currentLandmark().name.toUpperCase(),32,37);ctx.fillStyle="#cad6de";ctx.font="500 9px Inter, sans-serif";ctx.fillText(currentLandmark().date,32,51)}
+function drawIntegrityBar(){
+  const value=mode==="portage"?portage.rig:boat.health;
+  const label=mode==="portage"?"HAULING RIG":"HULL INTEGRITY";
+  const x=W/2-190,y=H-42,w=380,h=18;
 
+  rr(x-12,y-19,w+24,45,12,"rgba(5,12,20,.78)");
+  ctx.fillStyle="rgba(255,255,255,.12)";ctx.font="800 9px Inter, sans-serif";ctx.textAlign="left";
+  ctx.fillText(label,x,y-7);
+  ctx.textAlign="right";ctx.fillStyle="#fff";ctx.fillText(`${Math.round(value)} / 100`,x+w,y-7);
+
+  rr(x,y,w,h,9,"rgba(255,255,255,.12)");
+
+  if(damageFlash>0&&healthGhost>value){
+    rr(x,y,w*(healthGhost/100),h,9,"rgba(222,113,90,.54)");
+  }
+
+  const color=value>60?"#6fd39a":value>30?"#e0b958":"#db645c";
+  rr(x,y,w*(value/100),h,9,color);
+
+  ctx.fillStyle="rgba(255,255,255,.25)";
+  ctx.fillRect(x+6,y+3,Math.max(0,w*(value/100)-12),2);
+
+  if(damageFlash>0&&lastDamage>0){
+    ctx.globalAlpha=clamp(damageFlash/.95,0,1);
+    ctx.fillStyle="#ff8c7d";ctx.font="900 21px Inter, sans-serif";ctx.textAlign="center";
+    ctx.fillText(`-${lastDamage}`,W/2,y-24-(1-damageFlash/.95)*20);
+    ctx.globalAlpha=1;
+  }
+}
+function drawRiverHud(){
+  rr(18,18,250,44,12,"rgba(7,14,23,.58)");
+  ctx.fillStyle="#fff";ctx.font="800 11px Inter, sans-serif";ctx.textAlign="left";
+  ctx.fillText(currentLandmark().name.toUpperCase(),32,37);
+  ctx.fillStyle="#cad6de";ctx.font="500 9px Inter, sans-serif";
+  ctx.fillText(currentLandmark().date,32,51);
+  drawIntegrityBar()
+}
 /* ---------- PORTAGE GRAPHICS ---------- */
 function drawPortageSky(){
   const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,"#81aabc");g.addColorStop(.36,"#c4d3cc");g.addColorStop(.37,"#aa9c6d");g.addColorStop(1,"#776747");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -815,7 +1136,7 @@ function drawPortageRig(){
   // progress HUD
   rr(W/2-205,22,410,52,14,"rgba(6,12,20,.78)");ctx.fillStyle="#fff";ctx.font="800 12px Inter";ctx.textAlign="center";ctx.fillText(`GREAT FALLS PORTAGE — STAGE ${portage.stage}/3`,W/2,42);rr(W/2-172,55,344,8,4,"rgba(255,255,255,.13)");rr(W/2-172,55,344*(portage.progress/100),8,4,"#d9b75f")
 }
-function drawPortage(){drawPortageTrail();portage.obstacles.forEach(drawPortageObstacle);drawPortageRig()}
+function drawPortage(){drawPortageTrail();portage.obstacles.forEach(drawPortageObstacle);drawPortageRig();drawIntegrityBar()}
 
 /* ---------- DRAW ---------- */
 function draw(){
@@ -827,8 +1148,8 @@ function draw(){
 
 /* ---------- BUTTONS ---------- */
 ui.newBtn.addEventListener("click",startNew);
-ui.continueBtn.addEventListener("click",()=>{ensureAudio();if(!loadGame())startNew()});
-ui.restartBtn.addEventListener("click",()=>{ui.endOverlay.classList.add("hidden");ui.startOverlay.classList.remove("hidden");resetCampaign(true);running=false});
+ui.continueBtn.addEventListener("click",()=>{ensureAudio();if(loadGame())playMusic(false);else startNew()});
+ui.restartBtn.addEventListener("click",()=>{pauseMusic();ui.endOverlay.classList.add("hidden");ui.startOverlay.classList.remove("hidden");resetCampaign(true);running=false});
 ui.intermissionBtn.addEventListener("click",()=>{
   if(ui.intermissionBtn.dataset.finish==="yes"){ui.intermissionOverlay.classList.add("hidden");campaignComplete();return}
   beginActTwo()
@@ -837,6 +1158,20 @@ ui.southChoice.addEventListener("click",()=>resolveDecision(true));ui.northChoic
 ui.portageStartBtn.addEventListener("click",beginPortage);
 ui.abilityBtn.addEventListener("click",useAbility);ui.prevBtn.addEventListener("click",()=>switchRelative(-1));ui.nextBtn.addEventListener("click",()=>switchRelative(1));ui.pauseBtn.addEventListener("click",togglePause);ui.saveBtn.addEventListener("click",()=>saveGame(true));
 ui.sfxBtn.addEventListener("click",()=>{sfxOn=!sfxOn;if(sfxGain)sfxGain.gain.value=sfxOn?.36:0;ui.sfxBtn.textContent=`SFX: ${sfxOn?"On":"Off"}`});
+ui.musicBtn.addEventListener("click",()=>{
+  musicOn=!musicOn;
+  ui.musicBtn.textContent=`Music: ${musicOn?"On":"Off"}`;
+  if(!musicOn)pauseMusic();
+  else if(running&&!paused)playMusic(false);
+});
+
+
+window.addEventListener("error",e=>{
+  const msg=e&&e.message?e.message:"Unknown runtime error";
+  console.error("CORPS runtime error:",msg);
+  if(ui&&ui.status)ui.status.textContent="RUNTIME ERROR: "+msg;
+});
+window.addEventListener("unhandledrejection",e=>console.warn("CORPS promise warning:",e&&e.reason?e.reason:e));
 
 /* ---------- BOOT ---------- */
 function boot(){
