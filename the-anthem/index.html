@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>The Anthem &mdash; Promise &amp; Practice</title><style>
-:root{--rust:#b1442f;--ink:#1a1a1a;--body:#33302b;--mut:#7a7166;--hair:#e3ddd4;--page:#fbf8f2;--card:#fff;--soft:#f4efe6}
+:root{--rust:#b1442f;--ink:#1a1a1a;--body:#33302b;--mut:#6a6256;--hair:#e3ddd4;--page:#fbf8f2;--card:#fff;--soft:#f4efe6}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--page);color:var(--body);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;line-height:1.62}
 #bar{position:fixed;top:0;left:0;height:3px;background:var(--rust);width:0;z-index:40;transition:width .3s}
@@ -225,7 +225,7 @@ var THUMBS={"bombardment": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2
 (function(){var m=document.getElementById('mosaic');if(m)MOSAIC.forEach(function(s){var d=document.createElement('div');if(THUMBS[s])d.style.backgroundImage='url('+THUMBS[s]+')';m.appendChild(d);});})();
 var slides=[].slice.call(document.querySelectorAll('.slide')),cur=0;
 var dotsBox=document.getElementById('dots');
-slides.forEach(function(_,i){var b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Slide '+(i+1));b.addEventListener('click',function(){go(i);});dotsBox.appendChild(b);});
+slides.forEach(function(_,i){var b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Go to slide '+(i+1));b.setAttribute('aria-label','Slide '+(i+1));b.addEventListener('click',function(){go(i);});dotsBox.appendChild(b);});
 var dots=[].slice.call(document.querySelectorAll('.dot')),prev=document.getElementById('prev'),next=document.getElementById('next'),counter=document.getElementById('counter'),bar=document.getElementById('bar');
 var deck=document.getElementById('deck');
 function go(i){i=Math.max(0,Math.min(N-1,i));document.querySelectorAll('audio').forEach(function(a){try{if(!a.paused)a.pause();}catch(e){}});slides[cur].classList.remove('active');dots[cur]&&dots[cur].classList.remove('on');cur=i;slides[cur].classList.add('active');dots[cur]&&dots[cur].classList.add('on');counter.textContent=(cur+1)+' / '+N;bar.style.width=(cur/(N-1)*100)+'%';prev.disabled=(cur===0);next.disabled=(cur===N-1);if(deck)deck.scrollIntoView({block:'start'});}
