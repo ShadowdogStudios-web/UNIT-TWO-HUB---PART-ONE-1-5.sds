@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>The War, Set to Music &mdash; Promise &amp; Practice</title>
 <style>
-:root{--rust:#b1442f;--ink:#1a1a1a;--body:#33302b;--mut:#7a7166;--hair:#e3ddd4;--page:#fbf8f2;--soft:#f4efe6;--blue:#3f6f8a;--olive:#6b7f4a;--good:#2f7d4f;--bad:#b23b3b}
+:root{--rust:#b1442f;--ink:#1a1a1a;--body:#33302b;--mut:#6a6256;--hair:#e3ddd4;--page:#fbf8f2;--soft:#f4efe6;--blue:#3f6f8a;--olive:#6b7f4a;--good:#2f7d4f;--bad:#b23b3b}
 *{box-sizing:border-box}html,body{margin:0}
 body{background:var(--page);color:var(--body);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.62}
 #bar{position:fixed;top:0;left:0;height:3px;background:var(--rust);width:0;z-index:40;transition:width .3s}
@@ -246,7 +246,7 @@ var DATA={"match": [{"id": "march_away", "name": "March Away", "ans": "Fire youn
 /* carousel */
 var slides=[].slice.call(document.querySelectorAll('.slide')),cur=0,N=slides.length;
 var dotsBox=document.getElementById('dots');
-slides.forEach(function(_,i){var b=document.createElement('button');b.className='dot';b.addEventListener('click',function(){go(i);});dotsBox.appendChild(b);});
+slides.forEach(function(_,i){var b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Go to slide '+(i+1));b.addEventListener('click',function(){go(i);});dotsBox.appendChild(b);});
 var dots=[].slice.call(document.querySelectorAll('.dot')),prev=document.getElementById('prev'),next=document.getElementById('next'),counter=document.getElementById('counter'),bar=document.getElementById('bar'),deck=document.getElementById('deck');
 function stopAudio(){document.querySelectorAll('audio').forEach(function(a){try{a.pause();}catch(e){}});}
 function go(i){i=Math.max(0,Math.min(N-1,i));stopAudio();slides[cur].classList.remove('active');dots[cur]&&dots[cur].classList.remove('on');cur=i;slides[cur].classList.add('active');dots[cur]&&dots[cur].classList.add('on');counter.textContent=(cur+1)+' / '+N;bar.style.width=(cur/(N-1)*100)+'%';prev.disabled=(cur===0);next.disabled=(cur===N-1);if(deck)deck.scrollIntoView({block:'start'});}
