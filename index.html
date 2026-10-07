@@ -33,7 +33,7 @@ h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:clamp(3
 .tile{position:relative}
 .gamebadge{position:absolute;top:9px;right:9px;z-index:4;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.93);box-shadow:0 2px 7px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;color:#b1442f;opacity:.9}
 .gamebadge svg{width:16px;height:16px;fill:currentColor}
-#hubPaw{position:fixed;left:16px;bottom:16px;z-index:40;width:30px;height:30px;padding:0;border:none;background:none;color:#b1442f;opacity:.22;cursor:pointer;transition:opacity .25s ease,transform .25s ease}
+@keyframes sdPawHint{0%,60%,100%{transform:scale(1) rotate(0deg)}18%{transform:scale(1.5) rotate(-10deg);opacity:1}34%{transform:scale(1) rotate(0deg)}}#hubPaw{position:fixed;left:16px;bottom:16px;z-index:40;width:30px;height:30px;padding:0;border:none;background:none;color:#b1442f;opacity:.42;cursor:pointer;transition:opacity .25s ease,transform .25s ease;animation:sdPawHint 1.5s ease 1.4s 3}
 #hubPaw:hover,#hubPaw:focus-visible{opacity:.95;transform:scale(1.18) rotate(-6deg);outline:none}
 #hubPaw svg{width:100%;height:100%;fill:currentColor}
 #arcadeOv{position:fixed;inset:0;z-index:10002;display:none;background:rgba(40,20,14,.62);backdrop-filter:blur(3px);padding:clamp(16px,5vh,56px);overflow:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
@@ -116,7 +116,7 @@ h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;font-size:clamp(3
  }
  function play(i){
   var game=GAMES[i];
-  card.innerHTML='<div class="ak">ShadowDog Arcade</div><h2>'+esc(game.t)+'</h2><iframe src="'+game.u+'" title="'+esc(game.t)+'"></iframe><div class="row"><button class="btn" id="arcBack">\u2190 Back to arcade</button><button class="btn ghost" id="arcClose2">Close</button></div>';
+  card.innerHTML='<div class="ak">ShadowDog Arcade</div><h2>'+esc(game.t)+'</h2><iframe src="'+game.u+'" title="'+esc(game.t)+'"></iframe><div class="row"><button class="btn" id="arcBack">\u2190 Back to arcade</button><button class="btn ghost" id="arcClose2">Close</button></div>';var _gf=card.querySelector('iframe');if(_gf){var _try=function(){try{var w=_gf.contentWindow,d=w.document;if(!d||!d.body)return;var sc=d.createElement('script');sc.textContent="(function(){try{var bs=[].slice.call(document.querySelectorAll('button')).filter(function(x){return x.offsetParent!==null;});var strong=/new expedition|begin campaign|new game|start a new|choose your|select your|begin the|launch/i;var hit=bs.filter(function(x){return strong.test(x.textContent||'');})[0]||bs.filter(function(x){return /begin|start|play|deploy|march|set out/i.test(x.textContent||'');})[0];if(hit)hit.scrollIntoView({block:'center',behavior:'auto'});}catch(e){}})();";d.body.appendChild(sc);d.body.removeChild(sc);}catch(e){}};var _kick=function(){setTimeout(_try,500);setTimeout(_try,1200);setTimeout(_try,2200);};_gf.addEventListener('load',_kick);_kick();}
   var bk=document.getElementById('arcBack'); if(bk)bk.onclick=menu;
   var c=document.getElementById('arcClose2'); if(c)c.onclick=close;
  }
