@@ -248,7 +248,7 @@ document.addEventListener('keydown',function(e){var t=e.target.closest&&e.target
 window.addEventListener('scroll',closeDef,true);
 </script>
 <style id="sd-egg-css">
-#sdPaw{position:fixed;left:16px;bottom:16px;z-index:38;width:30px;height:30px;padding:0;border:none;background:none;color:#e0805f;opacity:.20;cursor:pointer;transition:opacity .25s ease,transform .25s ease}
+@keyframes sdPawHint{0%,60%,100%{transform:scale(1) rotate(0deg)}18%{transform:scale(1.5) rotate(-10deg);opacity:1}34%{transform:scale(1) rotate(0deg)}}#sdPaw{position:fixed;left:16px;bottom:16px;z-index:38;width:30px;height:30px;padding:0;border:none;background:none;color:#e0805f;opacity:.42;cursor:pointer;transition:opacity .25s ease,transform .25s ease;animation:sdPawHint 1.5s ease 1.4s 3}
 #sdPaw:hover,#sdPaw:focus-visible{opacity:.95;transform:scale(1.18) rotate(-6deg);outline:none}
 #sdPaw svg{width:100%;height:100%;display:block;fill:currentColor}
 #sdGameOv{position:fixed;inset:0;z-index:10002;display:none;background:rgba(10,7,4,.80);backdrop-filter:blur(3px);padding:clamp(16px,5vh,56px);overflow:auto;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif}
@@ -272,7 +272,7 @@ window.addEventListener('scroll',closeDef,true);
  function esc(s){return (s+'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
  function close(){ov.classList.remove('on');card.innerHTML='';}
  function open(){
-  if(GAME_READY){card.innerHTML='<iframe src="./game.html" title="'+esc(title)+' game"></iframe><div><button class="sd-btn" id="sdClose">Close</button></div>';}
+  if(GAME_READY){card.innerHTML='<iframe src="./game.html" title="'+esc(title)+' game"></iframe><div><button class="sd-btn" id="sdClose">Close</button></div>';var _gf=card.querySelector('iframe');if(_gf){var _try=function(){try{var w=_gf.contentWindow,d=w.document;if(!d||!d.body)return;var sc=d.createElement('script');sc.textContent="(function(){try{var bs=[].slice.call(document.querySelectorAll('button')).filter(function(x){return x.offsetParent!==null;});var strong=/new expedition|begin campaign|new game|start a new|choose your|select your|begin the|launch/i;var hit=bs.filter(function(x){return strong.test(x.textContent||'');})[0]||bs.filter(function(x){return /begin|start|play|deploy|march|set out/i.test(x.textContent||'');})[0];if(hit)hit.scrollIntoView({block:'center',behavior:'auto'});}catch(e){}})();";d.body.appendChild(sc);d.body.removeChild(sc);}catch(e){}};var _kick=function(){setTimeout(_try,500);setTimeout(_try,1200);setTimeout(_try,2200);};_gf.addEventListener('load',_kick);_kick();}}
   else{card.innerHTML='<div class="sd-paw-big">🐾</div><div class="sd-kick">You found a hidden game</div><h2>'+esc(title)+'</h2><p>This mini-game is still in the kennel — check back soon. Keep an eye out for more hidden paws across the unit.</p><button class="sd-btn" id="sdClose">Close</button>';}
   ov.classList.add('on');
   var c=document.getElementById('sdClose'); if(c)c.onclick=close;
