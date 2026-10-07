@@ -6,7 +6,7 @@
 <title>The Black Hawk War · 1832</title>
 <style>
 :root{
- --bg:#ffffff; --panel:#f6f4ef; --ink:#191919; --body:#4a4a4a; --mut:#8c8c8c;
+ --bg:#ffffff; --panel:#f6f4ef; --ink:#191919; --body:#4a4a4a; --mut:#6e6e6e;
  --accent:#b1442f; --hair:#e5e1d9; --deep:#7a1f19;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -191,7 +191,7 @@ ul.b li b{color:var(--ink)}
 #defpop .dp-term{font-family:Georgia,serif;font-weight:700;color:#1a1a1a;font-size:15.5px;margin-bottom:4px}
 #defpop .dp-def{font-size:13.5px;color:#33302b;line-height:1.5}
 #defpop .dp-x{position:absolute;top:5px;right:9px;color:#7a7166;font-size:16px;line-height:1;cursor:pointer}
-</style>
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}</style>
 </head>
 <body>
 <div class="stage">
@@ -272,16 +272,16 @@ SL.forEach((s,i)=>{
  else if(s.type==='fullimg'){const cap=CRED[s.img]?`<div class="containcap">${CRED[s.img]}</div>`:'';inner=`<div class="pane body" style="flex:0 0 34%">${bodyInner(s)}</div><div class="pane containpane">${IMG[s.img]?`<img src="${IMG[s.img]}" alt="">${cap}`:''}</div>`;}
  else if(s.type==='map'){const mc=s.mapcap!==undefined?s.mapcap:'Original schematic (ShadowDog Digital Studios) — stylized, not to scale.';inner=`<div class="center"><div style="max-width:1100px;width:100%">${bodyInner(s)}<div class="mapwrap">${s.svg}${mc?`<div class="mapcap">${mc}</div>`:''}</div></div></div>`;}
  else if(s.type==='fortsmap'){const sp=`<div class="pane svgpane">${s.svg}</div>`;const bd=`<div class="pane body">${bodyInner(s)}</div>`;inner=s.side==='left'?bd+sp:sp+bd;}
- else if(s.type==='stat'){if(s.img&&IMG[s.img]){const cap=CRED[s.img]?`<div class="containcap" style="margin:12px auto 0;max-width:620px">${CRED[s.img]}</div>`:'';inner=`<div class="center" style="padding-top:clamp(24px,3.5vw,56px);padding-bottom:clamp(24px,3.5vw,56px)">${bodyInner(s)}<div class="statimg"><img src="${IMG[s.img]}" alt="">${cap}</div></div>`;}else{inner=`<div class="center">${bodyInner(s)}</div>`;}}
+ else if(s.type==='stat'){if(s.img&&IMG[s.img]){const cap=CRED[s.img]?`<div class="containcap" style="margin:12px auto 0;max-width:620px">${CRED[s.img]}</div>`:'';inner=`<div class="center" tabindex="0" style="padding-top:clamp(24px,3.5vw,56px);padding-bottom:clamp(24px,3.5vw,56px)">${bodyInner(s)}<div class="statimg"><img src="${IMG[s.img]}" alt="">${cap}</div></div>`;}else{inner=`<div class="center">${bodyInner(s)}</div>`;}}
  else if(s.type==='quote'){inner=`<div class="pane body" style="flex:1">${bodyInner(s)}</div>`+imgPane(s.img,s.slot);}
- else if(s.type==='gallery'){const tiles=s.gallery.map(g=>`<figure class="gtile">${g.img&&IMG[g.img]?`<img src="${IMG[g.img]}" alt="">`:`<div class="gslot"><span>${g.slot||'Image'}</span></div>`}<figcaption><b>${g.name}</b>${g.note?`<span>${g.note}</span>`:''}</figcaption></figure>`).join('');inner=`<div class="center" style="justify-content:center"><div style="max-width:1180px;width:100%">${bodyInner(s)}<div class="gallery">${tiles}</div></div></div>`;}
+ else if(s.type==='gallery'){const tiles=s.gallery.map(g=>`<figure class="gtile">${g.img&&IMG[g.img]?`<img src="${IMG[g.img]}" alt="">`:`<div class="gslot"><span>${g.slot||'Image'}</span></div>`}<figcaption><b>${g.name}</b>${g.note?`<span>${g.note}</span>`:''}</figcaption></figure>`).join('');inner=`<div class="center" style="justify-content:center" tabindex="0"><div style="max-width:1180px;width:100%">${bodyInner(s)}<div class="gallery">${tiles}</div></div></div>`;}
  else if(s.type==='closing'||s.type==='launch'){inner=`<div class="center">${bodyInner(s)}</div>`;}
  else if(s.type==='credits'){inner=`<div class="body credits" style="flex:1">${bodyInner(s)}</div>`;}
  el.innerHTML=inner;track.appendChild(el);
 });
 let idx=0;const N=SL.length;
 const dots=document.getElementById('dots'),count=document.getElementById('count'),prev=document.getElementById('prev'),next=document.getElementById('next');
-SL.forEach((_,i)=>{const b=document.createElement('button');b.className='dot';b.onclick=()=>go(i);dots.appendChild(b);});
+SL.forEach((_,i)=>{const b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Go to slide '+(i+1));b.onclick=()=>go(i);dots.appendChild(b);});
 function go(i){idx=Math.max(0,Math.min(N-1,i));track.style.transform='translateX(-'+(idx*100)+'%)';
  [...dots.children].forEach((d,k)=>d.classList.toggle('on',k===idx));
  count.textContent=String(idx+1).padStart(2,'0')+' / '+N;prev.disabled=idx===0;next.disabled=idx===N-1;
